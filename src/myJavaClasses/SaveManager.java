@@ -30,7 +30,7 @@ public class SaveManager {
 
     public static void objectSave(String filename, Object to_save)
 	{
-	    try {
+	    try { // TODO add backup and restore functionality
 
             Disp.anyType(">>> Saving to [ " + filename + " ] ... !!!!!! DO NOT STOP PROGRAM NOW OR YOU'LL LOSE THE WHOLE SAVE !!!!!! ... You'd better be patient, wouldn't you ?");
 

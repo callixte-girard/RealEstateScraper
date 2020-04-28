@@ -1,5 +1,6 @@
 package handleVPN;
 
+import jdk.internal.org.objectweb.asm.Handle;
 import myJavaClasses.Disp;
 import myJavaClasses.SaveManager;
 import myJavaClasses.ShellWrapper;
@@ -45,7 +46,7 @@ public class Region implements Serializable {
         return ipAddresses;
     }
 
-    public boolean isSaturated()
+    public boolean isSaturated(boolean debug)
     {
         int blockedCounter = 0;
         for (IP ip : this.getIpAddresses()) {
@@ -53,23 +54,27 @@ public class Region implements Serializable {
         }
 
         // different ways of saying a region is saturated
-//        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 3; // with / 2
+        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 3; // with / 2
 //        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 4; // without / 2
 //        int ip_saturation_limit = 3 + this.getIpAddresses().size() / 6; // both
-        int ip_saturation_limit = 3 + this.getIpAddresses().size() / 12; // without / 2
+//        int ip_saturation_limit = 3 + this.getIpAddresses().size() / 12; // without / 2
+//        int ip_saturation_limit = 5 + this.getIpAddresses().size() / 12; // without / 2
 
-        Disp.progress("IP saturation rate of " + this.getName(), blockedCounter, this.getIpAddresses().size());
-        Disp.progress("IP saturation limit of " + this.getName(), blockedCounter, ip_saturation_limit);
-        Disp.star();
-
-//        boolean saturated = this.getIpAddresses().size() >= 0 && blockedCounter > ip_saturation_limit / 2;
-        boolean saturated = this.getIpAddresses().size() >= 0 && blockedCounter > ip_saturation_limit;
-//        boolean saturated = this.getIpAddresses().size() >= 0 && blockedCounter > this.getIpAddresses().size() / 6;
-//        boolean saturated = this.getIpAddresses().size() >= 0 && blockedCounter > nb_max_blocked_addresses;
-//        boolean saturated = this.getIpAddresses().size() >= Region.nb_max_blocked_addresses;
-//        boolean saturated = this.allAIPsSaturated();
-
+        boolean saturated;
+        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit / 2;
+//        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit;
+//        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= this.getIpAddresses().size() / 6;
+//        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= nb_max_blocked_addresses;
+//        saturated = this.getIpAddresses().size() >= Region.nb_max_blocked_addresses;
+//        saturated = this.allAIPsSaturated();
 //        Disp.anyType("saturated: " + saturated);
+
+        if (debug) {
+            Disp.progress("IP saturation rate of " + getCurrent().getName(), blockedCounter, getCurrent().getIpAddresses().size());
+            Disp.progress("IP saturation limit of " + getCurrent().getName(), blockedCounter, ip_saturation_limit);
+            Disp.star();
+        }
+
         return saturated;
     }
 
@@ -98,9 +103,10 @@ public class Region implements Serializable {
 
         Region nextRegion = getClosestUnsaturatedRegions().get(0);
         ShellWrapper.execute("piactl set region " + nextRegion.getName());
-        Disp.anyType("verif: " + getCurrent());
+//        Disp.anyType("verif: " + getCurrent());
         // now save : not ne
 //        SaveManager.objectSave(Main.filename_vpn_state + Main.extension_save, Region.getRegions());
+
         return nextRegion;
     }
 
@@ -126,7 +132,7 @@ public class Region implements Serializable {
         for (int i=0 ; i<4; i++) {
             ArrayList<Region> out = new ArrayList<>();
             for (Region region : getRegionsByDelayRange(i)) {
-                if (!region.isSaturated()) {
+                if (!region.isSaturated(false)) {
                     out.add(region);
 //                    Disp.anyType("unsaturated "+i+": " + region);
                 }

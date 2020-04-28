@@ -153,6 +153,7 @@ public class Main {
             Disp.anyType(">>> " + actual_progress + " / " + total_cities + " cities are already parsed.");
             Disp.anyType(">>> Will now parse " + remaining_cities + " remaining cities.");
         }
+//        HandleVPN.displayGlobalState();
 
         Disp.htag(); Disp.htag(); Disp.htag();
         int nbRetries_thisSess = 0;
@@ -161,7 +162,7 @@ public class Main {
         boolean needsSave = false;
 
         // the loop ;)
-        for (int index_city=0 ; index_city < urls_cities.size() ; index_city ++)
+        for (int index_city=1 ; index_city < urls_cities.size() ; index_city ++)
         {
             String url_city = urls_cities.get(index_city);
             String url_to_parse = url_main + url_city; // assemble partial url with main part
@@ -226,14 +227,17 @@ public class Main {
 
 
                     // change IP as much as possible...
-                    if (! Region.getCurrent().isSaturated()) {
+                    if (! Region.getCurrent().isSaturated(true)) {
                         // first try to fix the problem by changing IP in the same region.
                         IP.handleChange();
 
                         // is this IP already blocked ?
-                        while (IP.getCurrent().isBlocked()) {
-                            Disp.anyType(">>> [" + IP.getCurrent().getAddress() + "] has already failed more than " + IP.nb_max_each_ip + " times —> trying another one");
-                            IP.handleChange();
+                        if (false) // #to-complete
+                        {
+                            while (IP.getCurrent().isBlocked()) {
+                                Disp.anyType(">>> [" + IP.getCurrent().getAddress() + "] has already failed more than " + IP.nb_max_each_ip + " times —> trying another one");
+                                IP.handleChange();
+                            }
                         }
 
                     // ...when limit reached go to next region
