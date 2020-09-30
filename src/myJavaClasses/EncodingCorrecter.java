@@ -9,9 +9,9 @@ import java.util.List;
 public class EncodingCorrecter {
 
 /////// 2018-08-25 : now supports u00 decoding !
-	
+
 	private static String url_percentEncoding = "http://www.degraeve.com/reference/urlencoding.php" ;
-	
+
 	private static HashMap<String, Character> mapping_percentEncoding = new HashMap<String, Character>() ;
 	private static HashMap<String, Character> mapping_htmlEncoding = new HashMap<String, Character>() ;
 	private static HashMap<String, Character> mapping_u00 = new HashMap<String, Character>() ;
@@ -33,18 +33,18 @@ public class EncodingCorrecter {
 	{
 		String html = ParseHtml.fetchHtmlAsDocumentFromUrl(url_percentEncoding).html();
 		ArrayList<String> fetched = Misc.splitStringIntoLinesArrayList(html);
-		
-		
+
+
 		List<String> extracted = Misc.extractOnlyNeededLinesFromStringArrayList(fetched, "<pre>", "</pre>");
-		
-		
+
+
 		for (String s : extracted)
 		{
 			String key ;
 			char cha ;
-			
+
 			String[] spl = s.split("%");
-			
+
 			try
 			{
 				String corresp = spl[0].trim() ;
@@ -57,26 +57,27 @@ public class EncodingCorrecter {
 				cha = '%' ;
 				key = "%25";
 			}
-			
+
 			//System.out.println(key + " correspond à : " + cha);
-			
+
 			mapping_percentEncoding.put(key, cha);
 		}
-		
+
 	}
-	
-	
+
+
 	private static void fetchHtmlEncodingTable()
 	{
+		HashMap<String, Character> mapping_htmlEncoding = new HashMap<String, Character>() ;
 		mapping_htmlEncoding.put("&amp;", '&');
 		mapping_htmlEncoding.put("&lt;", '<');
 		mapping_htmlEncoding.put("&gt;", '>');
 		mapping_htmlEncoding.put("&quot;", '"');
-		mapping_htmlEncoding.put("&apos;", ' ');
-		
+		mapping_htmlEncoding.put("&apos;", '\'');
+		mapping_htmlEncoding.put("&nbsp;", ' ');
 	}
-	
-	
+
+
 	private static void fetchU00EncodingTable()
 	{
 		mapping_u00.put("\\u00c0" , 'À' ) ;
@@ -140,19 +141,19 @@ public class EncodingCorrecter {
 		mapping_u00.put("\\u00ff" , 'ÿ' ) ;
 
 	}
-	
-	
+
+
 	public static String convertFromPercentEncoding(String str) throws Exception
 	{
 		// convertit en ISO-Latin.
 		fetchPercentEncodingTable();
-		
+
 		char[] ch = str.toCharArray();
 		String perc_enc = "" ;
 		String out = "" ;
 		int compt = 0 ;
 		boolean http_post = false ;
-		
+
 		for (char c : ch)
 		{
 			// pour examiner si on va commencer une seq de http post
@@ -160,14 +161,14 @@ public class EncodingCorrecter {
 			{
 				perc_enc = "" ;
 				http_post = true ;
-				compt = 3 ; 
+				compt = 3 ;
 			}
 			// traite le caractère en fonction de la séquence.
 			if (http_post)
 			{
 				perc_enc += c ;
 				compt -- ;
-				
+
 				if (compt == 0)
 				{
 					out += mapping_percentEncoding.get(perc_enc);
@@ -182,20 +183,20 @@ public class EncodingCorrecter {
 			// debug
 			//System.out.println(c + " | " + compt + " | perc_enc = " + perc_enc + " | ok? " + http_post  + " | out = " + out);
 		}
-		
+
 		return out ;
 	}
-	
+
 	public static String convertFromHtmlCharacterRef(String str)
 	{
 		// convertit en ISO-Latin.
 		fetchHtmlEncodingTable();
-		
+
 		char[] ch = str.toCharArray();
 		String perc_enc = "" ;
 		String out = "" ;
 		boolean cut = false ;
-		
+
 		for (char c : ch)
 		{
 			// pour examiner si on va commencer une seq de &xxxx;
@@ -220,28 +221,28 @@ public class EncodingCorrecter {
 				cut = false ;
 				out += mapping_htmlEncoding.get(perc_enc);
 			}
-			
+
 			// debug
 			//System.out.println(c + " | perc_enc = " + perc_enc + " | ok? " + cut  + " | out = " + out);
 		}
-		
+
 		return out ;
 	}
 
-	
-	
-	
+
+
+
 
 	public static String convertFromU00(String str)
 	{
 		fetchU00EncodingTable();
-		
+
 		char[] ch = str.toCharArray();
 		String u00_enc = "" ;
 		String out = "" ;
 		int compt = 0 ;
 		boolean u00 = false ;
-		
+
 		for (char c : ch)
 		{
 			// pour examiner si on va commencer une seq de u00
@@ -256,9 +257,9 @@ public class EncodingCorrecter {
 			{
 				u00_enc += c ;
 				compt -- ;
-				
+
 				if (compt == 0)
-				{					
+				{
 					out += mapping_u00.get(u00_enc);
 					u00 = false ;
 				}
@@ -271,7 +272,7 @@ public class EncodingCorrecter {
 			// debug
 			//System.out.println(c + " | " + compt + " | u00_enc = " + u00_enc + " | ok? " + u00  + " | out = " + out);
 		}
-		
+
 		return out ;
 	}
 
@@ -282,56 +283,56 @@ public class EncodingCorrecter {
 		str = str.toLowerCase(); // maybe changer de place
 		char[] ch = str.toCharArray();
 		String s = "" ;
-		
+
 		for (char c : ch)
-		{		
+		{
 			s += c ;
-			
+
 			// removes spaces and other shits
-			if (s.equals(" ") || s.equals("'") 
+			if (s.equals(" ") || s.equals("'")
 					|| s.equals("(") || s.equals(")")
 					|| s.equals(",") || s.equals(";")
 				)
 			{
-				s = "-" ; // c = '_' ; 
+				s = "-" ; // c = '_' ;
 			}
-			
+
 			str_out += s ;
 
 			s = "" ;
-		}		
+		}
 		// check anti double "-"
 		if (str_out.contains("--"))
 		{
 			str_out = str_out.replaceAll("--", "-");
 		}
-		
+
 		return str_out ;
 	}
-	
-	
+
+
 	public static String normaliseAzertySpecialLetters(String str)
 	{
 		// !!!!! only works with all the letters typables with French (AZERTY) keyboards.
 		// (even if they don't exist in French)
-		
+
 		String str_out = "" ;
 		str = str.toLowerCase(); // maybe changer de place
 		char[] ch = str.toCharArray();
 		String s = "" ;
-		
+
 		for (char c : ch)
-		{	
+		{
 			s += c ;
-			
+
 			// voyelles
-			if (s.equals("à") || s.equals("á") 
-					|| s.equals("â") || s.equals("ä") 
+			if (s.equals("à") || s.equals("á")
+					|| s.equals("â") || s.equals("ä")
 					|| s.equals("ã"))
 			{
 				s = "a" ;
 			}
-			else if (s.equals("è") || s.equals("é") 
+			else if (s.equals("è") || s.equals("é")
 					|| s.equals("ê") || s.equals("ë") )
 			{
 				s = "e" ;
@@ -341,7 +342,7 @@ public class EncodingCorrecter {
 			{
 				s = "i" ;
 			}
-			else if (s.equals("ò") || s.equals("ó") 
+			else if (s.equals("ò") || s.equals("ó")
 					|| s.equals("ô") || s.equals("ö"))
 			{
 				s = "o" ;
@@ -360,7 +361,7 @@ public class EncodingCorrecter {
 			{
 				s = "oe" ;
 			}
-			
+
 			// consonnes
 			else if (s.equals("ç"))
 			{
@@ -370,9 +371,9 @@ public class EncodingCorrecter {
 			{
 				s = "n" ;
 			}
-			
+
 			str_out += s ;
-			
+
 			s = "" ;
 		}
 		return str_out ;

@@ -27,7 +27,7 @@ public class Main {
     private static final String save_folder = "data_saved/";
     private static final String output_folder = "data_output/";
     // paths
-    private static final String root_path = "/Users/c/Documents/Local Code/";
+    private static final String root_path = "/Users/c/Documents/Local Code/—Java/";
     private static final String save_path = root_path + projectName + "/" + save_folder;
     private static final String output_path = root_path + projectName + "/" + output_folder;
     // extensions
@@ -79,7 +79,7 @@ public class Main {
             Disp.star();
 
             // now let's start again and again and again ... FOREVAH ;)
-            try {
+            /*try {
 //                main(args);
             } catch (Exception | UncheckedIOException e2) {
 //                main(args);
@@ -88,7 +88,7 @@ public class Main {
 //                Disp.exc(e1.getCause() + " | " + e1.getMessage());
                 e2.printStackTrace();
                 Disp.star();
-            }
+            }*/
         }
 
         double end = System.currentTimeMillis(); // end counter

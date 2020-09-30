@@ -1,6 +1,5 @@
 package handleVPN;
 
-import jdk.nashorn.tools.Shell;
 import myJavaClasses.Disp;
 import myJavaClasses.SaveManager;
 import myJavaClasses.ShellWrapper;
@@ -9,15 +8,18 @@ import parseImmo.Main;
 import java.util.ArrayList;
 
 import static handleVPN.IP.NO_IP;
-import static handleVPN.IP.getCurrent;
 
 public class HandleVPN {
     // this class will contain all methods and logic to change region | IP
+    private static final String CONNECTED = "Connected";
+
     
     public static void initAllRegions() throws Exception
     {
         // if IP address is Unknown on loading, connect first.
-        if (ShellWrapper.execute("piactl get vpnip").equals(NO_IP)) ShellWrapper.execute("piactl activate");
+        ArrayList<String> currentState = ShellWrapper.execute("piactl get connectionstate");
+        System.out.println(currentState);
+        if (! currentState.get(0).equals(CONNECTED)) ShellWrapper.execute("piactl connect");
 
         // first try to load
         ArrayList<Region> initRegions = (ArrayList<Region>) SaveManager.objectLoad(
