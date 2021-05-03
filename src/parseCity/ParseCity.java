@@ -29,7 +29,7 @@ public class ParseCity {
         name = spl[0];
         postalCode = spl[1];
 
-        // >>>  buy
+        // >>> buy
         Prices pricesBuyAppt, pricesBuyHouse;
         try {
             pricesBuyAppt = ExtractPrices.extr(doc, false, true);

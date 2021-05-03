@@ -12,6 +12,7 @@ import static handleVPN.IP.NO_IP;
 public class HandleVPN {
     // this class will contain all methods and logic to change region | IP
     private static final String CONNECTED = "Connected";
+    private static final String DISCONNECTED = "Disconnected";
 
     
     public static void initAllRegions() throws Exception
@@ -19,7 +20,8 @@ public class HandleVPN {
         // if IP address is Unknown on loading, connect first.
         ArrayList<String> currentState = ShellWrapper.execute("piactl get connectionstate");
         System.out.println(currentState);
-        if (! currentState.get(0).equals(CONNECTED)) ShellWrapper.execute("piactl connect");
+        if (currentState.get(0).equals(CONNECTED)) ShellWrapper.execute("piactl disconnect");
+        if (currentState.get(0).equals(DISCONNECTED)) ShellWrapper.execute("piactl connect");
 
         // first try to load
         ArrayList<Region> initRegions = (ArrayList<Region>) SaveManager.objectLoad(

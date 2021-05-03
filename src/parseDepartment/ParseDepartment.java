@@ -88,7 +88,7 @@ public class ParseDepartment {
     }
 
 
-    private static String getDptNumberFromUrl(String url)
+    public static String getDptNumberFromUrl(String url)
     {
         String[] url_spl = url.split("/");
         String name_and_nb = url_spl[url_spl.length - 1];

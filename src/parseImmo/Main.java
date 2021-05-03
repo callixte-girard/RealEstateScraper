@@ -13,6 +13,7 @@ import handleVPN.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Main {
@@ -38,6 +39,14 @@ public class Main {
     public static final String filename_cities_list = "cities";
     public static final String filename_vpn_state = "regions";
 
+    // filter by department / city
+    public static String[] filterDepartments = {
+            // IDF
+            "75", // Paris
+            "92", "93", "94", // petite couronne
+            "77", "78", "91", "95", // grande couronne
+//            "60", // Oise : Creil & co
+    };
 
 
     public static void main_(String[] args) throws Exception
@@ -120,11 +129,16 @@ public class Main {
                 // add all cities urls for each dpt in main list
                 urls_cities = new ArrayList<>();
                 for (String url_dpt : urls_dpts) {
-                    String url_to_parse = url_main + url_dpt; // assemble partial url with main part
-                    Department dpt = ParseDepartment.parseCities(url_to_parse);
+                    // filter by department number
+                    if (Arrays.asList(filterDepartments).isEmpty() ||
+                            Arrays.asList(filterDepartments).contains(ParseDepartment.getDptNumberFromUrl(url_dpt))
+                    ) {
+                        String url_to_parse = url_main + url_dpt; // assemble partial url with main part
+                        Department dpt = ParseDepartment.parseCities(url_to_parse);
 
-                    urls_cities.addAll(dpt.getUrlsCities());
+                        urls_cities.addAll(dpt.getUrlsCities());
 //                    Disp.anyTypeThenStar(dpt.getUrlsCities().size()); // just to check we never get null
+                    }
                 }
             } catch (Exception e) {
                 Disp.exc("Can't download departments list containing urls to cities... Program can't start.");
