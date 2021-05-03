@@ -7,13 +7,14 @@ import org.jsoup.select.Elements;
 import java.util.LinkedHashMap;
 
 public class ExtractLocalInfos {
+//    private final static boolean preprocessData = true;
 
     // might change on the website...
     // !!! IMPORTANT TO KEEP THIS VALUE UPDATED
     // !!! MUST TAKE FORMAT : "(YYYY-YYYY)"
     private final static String datesInterval = "(2006-2011)";
-    // might probably not change on the website.
-    // !!! MUST BE KEPT AS IS
+    // might probably not change on the website, but always check when big update.
+    // ----- LABELS -----
     // 1) population
     public final static String label_population = "Population";
     public final static String label_rateDemographicGrowth = "Croissance démographique" + " " + datesInterval;
@@ -90,18 +91,36 @@ public class ExtractLocalInfos {
             String label = labels[i];
             String value = allLocalInfos.get(label);
 
-            // quick fixes
-            /*
-            if (label.equals(label_population)) value = value.replace(" habitants", "");
-            else if (label.equals(label_medianAge)) value = value.replace(" ans", "");
-            else if (label.equals(label_popDensity)) value = value.replace(" hab. / km²", "");
-            else if (label.equals(label_totalNbHomes)) value = value.replace(" logements²", "");
-            else if (label.equals(label_medianAnnualRevenue)) value = value.replace(" €", "");
-            else if (label.equals(label_employmentRateEvol)) value = value.replace(" pt.", "");
-            else if (label.equals(label_unemploymentRateEvol)) value = value.replace(" pt.", "");
-            */
+            // pre-process data TODO: complete
+            boolean preprocessData = false;
+            if (preprocessData) {
+                switch (label) {
+                    // 1) population
+                    case label_population:
+                        value = value.replace(" habitants", "");
+                        break;
+                    case label_medianAge:
+                        value = value.replace(" ans", "");
+                        break;
+                    case label_employmentRateEvol:
+                    case label_unemploymentRateEvol:
+                        value = value.replace(" pt.", "");
+                        break;
+                    case label_popDensity:
+                        value = value.replace(" hab. / km²", "");
+                        break;
+                    // 2) homes
+                    case label_totalNbHomes:
+                        value = value.replace(" logements²", "");
+                        break;
+                    // 3) revenue & employment
+                    case label_medianAnnualRevenue:
+                        value = value.replace(" €", "");
+                        break;
+                }
+                value = value.replaceAll(",", "."); // quick fix for , and .
+            }
 
-//            value = value.replaceAll("," , "."); // quick fix for , and .
             infos.put(label, value);
         }
         return infos;

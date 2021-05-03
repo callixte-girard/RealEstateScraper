@@ -11,6 +11,7 @@ import parseDepartment.ParseDepartment;
 import handleVPN.*;
 
 import java.io.*;
+import java.nio.file.ReadOnlyFileSystemException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,13 +67,14 @@ public class Main {
     public static void main(String[] args) throws Exception
     {
         Disp.shortMsgLine(projectName, false);
-
-        // some quick fixes before anything
         double start = System.currentTimeMillis(); // start counter
-        SaveManager.setSavePath(save_path);
 
-        HandleVPN.initAllRegions();
-        HandleVPN.displayCurrentRegionAndIP();
+        SaveManager.setSavePath(save_path);
+        ReadWriteFile.createFolderIfNotExists(save_path);
+        ReadWriteFile.createFolderIfNotExists(output_path);
+
+//        HandleVPN.initAllRegions();
+//        HandleVPN.displayCurrentRegionAndIP();
 
         // restart infinitely until everything is scraped
         try {
@@ -83,7 +85,7 @@ public class Main {
 
         } catch (Exception | UncheckedIOException e1) {
             Disp.exc("Exception level 1 : [ v" + e1 + " ]");
-//            Disp.exc(e.getCause() + " | " + e.getMessage());
+//            Disp.exc(e.getCause() + " | " + e.getMessage());
             e1.printStackTrace();
             Disp.star();
 
@@ -94,14 +96,14 @@ public class Main {
 //                main(args);
 
                 Disp.exc("Exception level 2 : [ " + e2 + " ]");
-//                Disp.exc(e1.getCause() + " | " + e1.getMessage());
+//                Disp.exc(e1.getCause() + " | " + e1.getMessage());
                 e2.printStackTrace();
                 Disp.star();
             }*/
         }
 
         double end = System.currentTimeMillis(); // end counter
-        System.out.println(":D :D :D ------------ GOOD JOB ! Total time : " + (end-start) + " ms ------------ :D :D :D");
+        System.out.println("Total time : " + (end-start) + " ms");
     }
 
 
@@ -291,11 +293,41 @@ public class Main {
 
     //////////////////////////////////////////////////////////
 
+
     private static void writeCitiesAsCSV(String filename, ArrayList<City> citiesToWrite, boolean with_headers)
-    { /// #### ATTENTION : version spécifique en attendant.
-//
+            throws IOException
+    {
+        String save_to = output_path + filename ;
+        System.out.println("Will save to : " + save_to);
+
+        /* TODO:
+            - export all data in series with clean labels as they appear on the website
+            - clean data values so that Excel recognises it without any further processing
+        */
+
+//        try {
+            BufferedWriter bw = ReadWriteFile.outputWriter(save_to);
+
+            // 1) pre-treat data
+            for (City city : citiesToWrite) {
+                System.out.println(city);
+                bw.write(city.getName());
+            }
+            // 2)
+
+            bw.close();
+            Disp.shortMsgStar("WRITING TO .csv FILE FINISHED", true);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+    private static void writeCitiesAsCSV_(String filename, ArrayList<City> citiesToWrite, boolean with_headers)
+    {
         String save_to = output_path + filename ;
         System.out.println(save_to);
+
 
         try {
             BufferedWriter bw = ReadWriteFile.outputWriter(save_to);

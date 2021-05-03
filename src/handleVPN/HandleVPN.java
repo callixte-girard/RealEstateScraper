@@ -21,7 +21,7 @@ public class HandleVPN {
         ArrayList<String> currentState = ShellWrapper.execute("piactl get connectionstate");
         System.out.println(currentState);
         if (currentState.get(0).equals(CONNECTED)) ShellWrapper.execute("piactl disconnect");
-        if (currentState.get(0).equals(DISCONNECTED)) ShellWrapper.execute("piactl connect");
+        /*if (currentState.get(0).equals(DISCONNECTED))*/ ShellWrapper.execute("piactl connect");
 
         // first try to load
         ArrayList<Region> initRegions = (ArrayList<Region>) SaveManager.objectLoad(
@@ -105,7 +105,7 @@ public class HandleVPN {
     {
         // get current region and ip
         Disp.shortMsgStar(
-                "Currently connected on [ " + Region.getCurrent()
+                "Currently connected on [" + Region.getCurrent()
                         + " | " + IP.getCurrent() + " ]", true
         );
     }

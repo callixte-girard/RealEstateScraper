@@ -20,7 +20,7 @@ public class Region implements Serializable {
     private static ArrayList<Region> regions = new ArrayList<>();
 
     private String name;
-    private int delayRange; // 0 = western € | 1 = eastern € | 2 = quite far | 3 = really far
+    private int delayRange; // 0 = western € | 1 = eastern € | 2 = quite far | 3 = really far
     private ArrayList<IP> ipAddresses = new ArrayList<>();
 
     public Region(String name, int delayRange) {
@@ -53,15 +53,15 @@ public class Region implements Serializable {
         }
 
         // different ways of saying a region is saturated
-        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 3; // with / 2
-//        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 4; // without / 2
+//        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 3; // with / 2
+        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 4; // without / 2
 //        int ip_saturation_limit = 3 + this.getIpAddresses().size() / 6; // both
 //        int ip_saturation_limit = 3 + this.getIpAddresses().size() / 12; // without / 2
 //        int ip_saturation_limit = 5 + this.getIpAddresses().size() / 12; // without / 2
 
         boolean saturated;
-        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit / 2;
-//        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit;
+//        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit / 2;
+        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= ip_saturation_limit;
 //        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= this.getIpAddresses().size() / 6;
 //        saturated = this.getIpAddresses().size() >= 0 && blockedCounter >= nb_max_blocked_addresses;
 //        saturated = this.getIpAddresses().size() >= Region.nb_max_blocked_addresses;

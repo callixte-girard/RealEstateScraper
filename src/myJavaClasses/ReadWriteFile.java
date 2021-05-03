@@ -14,7 +14,6 @@ public class ReadWriteFile
         return (ArrayList<File>)out ;
     }
 
-
     public static ArrayList<String> getFileContentAsStringArray(String full_path)
     {
         try {
@@ -33,6 +32,15 @@ public class ReadWriteFile
             return null;
         }
 
+    }
+
+    public static boolean createFolderIfNotExists(String pathToInspect)
+    {
+        File f = new File(pathToInspect);
+        if (f.exists() && f.isDirectory()) f.delete();
+        else if (! f.isFile()) f.mkdir();
+        // inspect before returning
+        return f.exists() && f.isDirectory();
     }
 
 
