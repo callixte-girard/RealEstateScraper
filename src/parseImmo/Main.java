@@ -361,7 +361,7 @@ public class Main {
                 // homes
                 String totalNbHomes = city.getLocalHomes().get(ExtractLocalInfos.label_totalNbHomes);
                 String rateVacantHomes = city.getLocalHomes().get(ExtractLocalInfos.label_rateVacantHomes);
-                String rateMainHomeRenting = city.getLocalHomes().get(ExtractLocalInfos.label_rateMainHomeRenting);
+                String rateMainHomeRenting = city.getLocalHomes().get(ExtractLocalInfos.label_rateMainHomeTenant);
                 // revenue / employment
                 String medianAnnualRevenue = city.getLocalRevenueEmpl().get(ExtractLocalInfos.label_medianAnnualRevenue);
                 String unemploymentRate15To64 = city.getLocalRevenueEmpl().get(ExtractLocalInfos.label_unemploymentRate15To64);

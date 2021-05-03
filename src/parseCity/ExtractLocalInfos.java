@@ -14,20 +14,33 @@ public class ExtractLocalInfos {
     private final static String datesInterval = "(2006-2011)";
     // might probably not change on the website.
     // !!! MUST BE KEPT AS IS
-    // population
+    // 1) population
     public final static String label_population = "Population";
-    public final static String label_popDensity = "Densité de la population (nombre d'habitants au km²)";
-    public final static String label_medianAge = "Age médian";
     public final static String label_rateDemographicGrowth = "Croissance démographique" + " " + datesInterval;
-    // homes
+    public final static String label_medianAge = "Age médian";
+    public final static String label_lt25yo = "Part des moins de 25 ans";
+    public final static String label_mt25yo = "Part des plus de 25 ans";
+    public final static String label_popDensity = "Densité de la population (nombre d'habitants au km²)";
+    public final static String label_area = "Superficie (en km²)";
+    // 2) homes
     public final static String label_totalNbHomes = "Nombre total de logements";
+    public final static String label_rateMainHomes = "Part des résidences principales";
+    public final static String label_rateSecondaryHomes = "Part des résidences secondaires";
     public final static String label_rateVacantHomes = "Part des logements vacants";
-    public final static String label_rateMainHomeRenting = "Part des ménages locataires de leur résidence principale";
-    // revenue & employment
+    public final static String label_rateSocialHomes = "Part des logements sociaux / HLM";
+    public final static String label_rateMainHomeOwner = "Part des ménages propriétaires de leur résidence principale";
+    public final static String label_rateMainHomeTenant = "Part des ménages locataires de leur résidence principale";
+    public final static String label_rateMainHome1Room = "Part des résidences principales 1 pièce";
+    public final static String label_rateMainHome2Rooms = "Part des résidences principales 2 pièces";
+    public final static String label_rateMainHome3Rooms = "Part des résidences principales 3 pièces";
+    public final static String label_rateMainHome4Rooms = "Part des résidences principales 4 pièces";
+    public final static String label_rateMainHome5RoomsMore = "Part des résidences principales 5 pièces ou plus";
+    // 3) revenue & employment
     public final static String label_medianAnnualRevenue = "Revenu annuel médian par ménage";
+    public final static String label_employmentRate15To64 = "Taux d'activité des 15 à 64 ans";
+    public final static String label_employmentRateEvol = "Evolution du taux d'activité" + " " + datesInterval;
     public final static String label_unemploymentRate15To64 = "Taux de chômage des 15 à 64 ans";
     public final static String label_unemploymentRateEvol = "Evolution du taux de chômage" + " " + datesInterval;
-    public final static String label_employmentRateEvol = "Evolution du taux d'activité" + " " + datesInterval;
 
 
     public static LinkedHashMap<String, String> all(Document doc)
@@ -99,9 +112,12 @@ public class ExtractLocalInfos {
     {
         String[] labels_localPop = {
                 label_population,
-                label_popDensity,
+                label_rateDemographicGrowth,
                 label_medianAge,
-                label_rateDemographicGrowth
+                label_lt25yo,
+                label_mt25yo,
+                label_popDensity,
+                label_area,
         };
         LinkedHashMap<String, String> localPop = extractSelectedLabelsFromLocalInfos(allLocalInfos, labels_localPop);
         return localPop;
@@ -111,8 +127,17 @@ public class ExtractLocalInfos {
     {
         String[] labels_localHomes = {
                 label_totalNbHomes,
+                label_rateMainHomes,
+                label_rateSecondaryHomes,
                 label_rateVacantHomes,
-                label_rateMainHomeRenting
+                label_rateSocialHomes,
+                label_rateMainHomeOwner,
+                label_rateMainHomeTenant,
+                label_rateMainHome1Room,
+                label_rateMainHome2Rooms,
+                label_rateMainHome3Rooms,
+                label_rateMainHome4Rooms,
+                label_rateMainHome5RoomsMore,
         };
         LinkedHashMap<String, String> localHomes = extractSelectedLabelsFromLocalInfos(allLocalInfos, labels_localHomes);
         return localHomes;
@@ -122,9 +147,10 @@ public class ExtractLocalInfos {
     {
         String[] labels_localRevenueEmpl = {
                 label_medianAnnualRevenue,
+                label_employmentRate15To64,
+                label_employmentRateEvol,
                 label_unemploymentRate15To64,
                 label_unemploymentRateEvol,
-                label_employmentRateEvol
         };
         LinkedHashMap<String, String> localRevenueEmpl = extractSelectedLabelsFromLocalInfos(allLocalInfos, labels_localRevenueEmpl);
         return localRevenueEmpl;
