@@ -51,6 +51,16 @@ public class Region implements Serializable {
         for (IP ip : this.getIpAddresses()) {
             if (ip.isBlocked()) blockedCounter ++;
         }
+        if (blockedCounter > 6) return true;
+        else return false;
+    }
+
+    public boolean isSaturated_(boolean debug)
+    {
+        int blockedCounter = 0;
+        for (IP ip : this.getIpAddresses()) {
+            if (ip.isBlocked()) blockedCounter ++;
+        }
 
         // different ways of saying a region is saturated
 //        int ip_saturation_limit = 2 + this.getIpAddresses().size() / 3; // with / 2
@@ -77,14 +87,14 @@ public class Region implements Serializable {
         return saturated;
     }
 
-    public int getGlobalSaturationIndicator()
+    /*public int getGlobalSaturationIndicator()
     {
         int indicator = 0;
         for (IP ip : this.getIpAddresses()) {
             indicator += ip.getTimesUsed();
         }
         return indicator;
-    }
+    }*/
 
     public static ArrayList<Region> getRegions() {
         return regions;

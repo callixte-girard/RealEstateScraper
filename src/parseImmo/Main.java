@@ -163,17 +163,18 @@ public class Main {
         cities = (ArrayList<City>) SaveManager.objectLoad
                 (filename_cities_list + extension_save , true);
 
-        if (cities == null) { // which means : if save does not exist
-            cities = new ArrayList<>();
-            Disp.anyType(">>> Now scraping all cities from all departments.");
-        } else {
+        if (cities != null)  // which means : if save file exists
+        {
             int actual_progress = cities.size();
             int total_cities = urls_cities.size();
             int remaining_cities = total_cities - actual_progress;
             Disp.anyType(">>> " + actual_progress + " / " + total_cities + " cities are already parsed.");
             Disp.anyType(">>> Will now parse " + remaining_cities + " remaining cities.");
         }
-//        HandleVPN.displayGlobalState();
+        else {
+            cities = new ArrayList<>();
+            Disp.anyType(">>> Now scraping all cities from all departments.");
+        }
 
         Disp.htag(); Disp.htag(); Disp.htag();
         int nbRetries_thisSess = 0;
@@ -182,7 +183,7 @@ public class Main {
         boolean needsSave = false;
 
         // the loop ;)
-        for (int index_city=1 ; index_city < urls_cities.size() ; index_city ++)
+        for (int index_city = 0 ; index_city < urls_cities.size() ; index_city ++)
         {
             String url_city = urls_cities.get(index_city);
             String url_to_parse = url_main + url_city; // assemble partial url with main part
@@ -193,7 +194,7 @@ public class Main {
                     City city = ParseCity.parse(url_to_parse);
 //                    Disp.anyType(city);
                     Disp.anyType(
-                            ">>> City n°" + index_city + " : [ "
+                            ">>> City n°" + (index_city+1) + " : [ "
                                     + city.getName() + " ("
                                     + city.getPostalCodeAsDptNumber() + ") ] ——> done."
                     );
@@ -232,7 +233,8 @@ public class Main {
                     if (nbRetries_thisSess == 1)
                     {
                         // mark current IP as used & update last try date
-                        IP.getCurrent().setTimesUsed(IP.getCurrent().getTimesUsed() + 1);
+//                        IP.getCurrent().setTimesUsed(IP.getCurrent().getTimesUsed() + 1);
+                        IP.getCurrent().setBlocked(true);
                         IP.getCurrent().setLastTry(LocalDateTime.now());
                         SaveManager.objectSave(filename_vpn_state + extension_save, Region.getRegions());
 
@@ -249,17 +251,7 @@ public class Main {
                     // change IP as much as possible...
                     if (! Region.getCurrent().isSaturated(true)) {
                         // first try to fix the problem by changing IP in the same region.
-                        IP.handleChange();
-
-                        // is this IP already blocked ?
-                        if (false) // #to-complete
-                        {
-                            while (IP.getCurrent().isBlocked()) {
-                                Disp.anyType(">>> [" + IP.getCurrent().getAddress() + "] has already failed more than " + IP.nb_max_each_ip + " times —> trying another one");
-                                IP.handleChange();
-                            }
-                        }
-
+                        IP.handleChange(); // includes marking the IP as saturated and try again until it's good
                     // ...when limit reached go to next region
                     } else {
                         // then try to switch to the next region
@@ -304,12 +296,7 @@ public class Main {
     private static void writeCitiesAsCSV(String filename, ArrayList<City> citiesToWrite, boolean with_headers)
     {
         String save_to = output_path + filename ;
-        System.out.println(save_to);
-
-        /* TODO:
-            - export all data in series with clean labels as they appear on the website
-            - clean data values so that Excel recognises it without any further processing
-        */
+        Disp.anyType("Full export path is : ", save_to);
 
         try {
             BufferedWriter bw = ReadWriteFile.outputWriter(save_to);
@@ -376,7 +363,7 @@ public class Main {
                 String cityUrl = city.getUrl();
                 String cityName = city.getName();
                 String cityDpt = city.getPostalCodeAsDptNumber();
-                String[] basicAttrs = { cityUrl, cityName, cityDpt};
+                String[] basicAttrs = { cityUrl, cityDpt, cityName };
 
                 // II.B. prices
                 // 1) TODO: define clean processes

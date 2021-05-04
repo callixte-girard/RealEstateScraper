@@ -13,13 +13,14 @@ import java.util.ArrayList;
 
 public class IP implements Serializable {
     // above which number of failures each IP is considered blocked
-    public static final int nb_max_each_ip = 2;
+    public static final int nb_max_each_ip = 1; // should stay at 1, because an IP is blocked for 24H after one round (25 requests in few seconds)
 
     public static final String NO_IP = "Unknown";
     public static final String NO_DATE = "°";
 
     private String address;
-    private int timesUsed = 0;
+//    private int timesUsed = 0;
+    private boolean blocked = false;
     private LocalDateTime lastTry;
 
     public IP(String address) {
@@ -29,16 +30,14 @@ public class IP implements Serializable {
 
     @Override
     public String toString() {
-        String lastTry_raw;
-        try {
-             lastTry_raw = this.getLastTry().format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm.ss"));
-        } catch (NullPointerException npEx) {
-             lastTry_raw = NO_DATE;
+        String out = this.getAddress();
+        if (this.blocked) {
+            String lastTry_raw = this.getLastTry().format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss"));
+            out += " *** BLOCKED *** on " + lastTry_raw;
+        } else {
+            out += " still not blocked :)";
         }
-        return this.getAddress() +
-                " (used " + this.getTimesUsed() +
-                " times — last try was on " + lastTry_raw +
-                ")";
+        return out;
     }
 
 
@@ -46,13 +45,13 @@ public class IP implements Serializable {
         return address;
     }
 
-    public int getTimesUsed() {
-        return timesUsed;
-    }
+//    public int getTimesUsed() {
+//        return timesUsed;
+//    }
 
-    public void setTimesUsed(int timesUsed) {
-        this.timesUsed = timesUsed;
-    }
+//    public void setTimesUsed(int timesUsed) {
+//        this.timesUsed = timesUsed;
+//    }
 
     public LocalDateTime getLastTry() {
         return lastTry;
@@ -62,28 +61,38 @@ public class IP implements Serializable {
         this.lastTry = lastTry;
     }
 
+//    public boolean isBlocked() {
+//        return this.timesUsed > nb_max_each_ip;
+//    }
+
     public boolean isBlocked() {
-        return this.timesUsed >= nb_max_each_ip;
+        return blocked;
     }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
 
     ////////////////////////// STATIC //////////////////////////
 
     public static IP handleChange()
     {
         Disp.anyType(">>> Handling IP change on same region...");
-
-        // the original order is indicated by n) :
+        // 1) increment current ip counter
+//        getCurrent().setTimesUsed(getCurrent().getTimesUsed() + 1);
+        getCurrent().setBlocked(true);
+        getCurrent().setLastTry(LocalDateTime.now());
         // 2) on/off : gives a new ip
+        IP oldIP = getCurrent();
         ShellWrapper.execute("piactl disconnect");
         ShellWrapper.execute("piactl connect");
-        // 3) new IP is ?
         IP newIP = getCurrent();
-        // 1) increment current ip counter
-        getCurrent().setTimesUsed(getCurrent().getTimesUsed() + 1);
-        getCurrent().setLastTry(LocalDateTime.now());
-        // now save
+        // 3) save
         SaveManager.objectSave(Main.filename_vpn_state + Main.extension_save, Region.getRegions());
-        return newIP;
+        // 4) if same, change again
+        if (newIP.getAddress().equals(oldIP.getAddress())) return handleChange();
+        else return newIP;
     }
 
     public static IP getCurrent()

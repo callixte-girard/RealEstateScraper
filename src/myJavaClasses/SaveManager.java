@@ -32,7 +32,7 @@ public class SaveManager {
 	{
 	    try { // TODO add backup and restore functionality
 
-            Disp.anyType(">>> Saving to [ " + filename + " ] ... !!!!!! DO NOT STOP PROGRAM NOW OR YOU'LL LOSE THE WHOLE SAVE !!!!!! ... You'd better be patient, wouldn't you ?");
+            Disp.anyType(">>> Saving to [ " + filename + " ] ... !!!!!! DO NOT STOP PROGRAM NOW OR YOU'LL LOSE THE WHOLE SAVE !!!!!! ... You'd better be patient, shouldn't you ?");
 
             FileOutputStream fos = new FileOutputStream(root_path + filename);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -58,7 +58,7 @@ public class SaveManager {
 		try {
 
             if (showFullSavePath)
-                System.out.println(">>> Full Save Path is : " + root_path + filename);
+                System.out.println(">>> Full Save Path for file [ " + filename + " ] is : " + root_path + filename);
 
             System.out.println(">>> Loading [ " + filename + " ] ... Please wait");
 

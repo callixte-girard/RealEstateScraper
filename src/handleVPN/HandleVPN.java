@@ -19,8 +19,8 @@ public class HandleVPN {
     {
         // if IP address is Unknown on loading, connect first.
         ArrayList<String> currentState = ShellWrapper.execute("piactl get connectionstate");
-        System.out.println(currentState);
-        if (currentState.get(0).equals(CONNECTED)) ShellWrapper.execute("piactl disconnect");
+        Disp.anyType(">>> State at program start-up : ", currentState);
+        if (! currentState.get(0).equals(DISCONNECTED)) ShellWrapper.execute("piactl disconnect");
         /*if (currentState.get(0).equals(DISCONNECTED))*/ ShellWrapper.execute("piactl connect");
 
         // first try to load
@@ -29,7 +29,7 @@ public class HandleVPN {
         if (initRegions == null) initRegions = new ArrayList<>();
         Region.setRegions(initRegions);
 
-        // else build from scratch
+        // else build from scratch TODO: evolve it so that it direclty takes delays from piactl
         if (Region.getRegions().isEmpty()) {
             // 0 = really close (western Europe)
             Region.getRegions().add(new Region("france", 0));

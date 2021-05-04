@@ -8,12 +8,15 @@ public class Disp {
 	private static String htag = "########################################################################################################################################################################################" ;
 	
 	// méthodes de branleur
-	public static void anyType(Object obj) {
-		System.out.println(String.valueOf(obj));
+	public static void anyType(Object... objs) {
+		for (Object obj : objs) {
+			System.out.print(String.valueOf(obj));
+		}
+		System.out.println();
 	}
 
-	public static void anyTypeThenLine(Object obj) {
-		anyType(obj);
+	public static void anyTypeThenLine(Object... objs) {
+		anyType(objs);
 		line();
 	}
 
@@ -78,7 +81,6 @@ public class Disp {
 	private static String generateWrapperFromMsg(String msg, char symbol) {
 		int wrapperLength = (line.length() - (msg.length() + 4)) / 2;
 		String wrapper = "";
-
 		for (int i=0 ; i<wrapperLength ; i++) {
 			wrapper += symbol;
 		}
