@@ -10,6 +10,10 @@ import java.util.LinkedHashMap;
 
 public class City implements Serializable {
 
+    public static final String label_name = "Nom de la ville";
+    public static final String label_dptNumber = "Département";
+
+
 //    private Document doc;
     private String url, name, postalCode;
     private Prices pricesBuyAppt, pricesBuyHouse, pricesRentAppt/*, pricesRentHouse */;
@@ -202,11 +206,11 @@ public class City implements Serializable {
     }
 
     public String getPostalCode() {
-        return postalCode;
+        return this.postalCode;
     }
 
     public String getPostalCodeAsDptNumber() {
-        return postalCode.substring(0, 2);
+        return this.postalCode.substring(0, 2);
     }
 
     public void setPostalCode(String postalCode) {
@@ -214,6 +218,18 @@ public class City implements Serializable {
     }
 
     public LinkedHashMap<String, String> getTrends() {
+        return this.trends;
+    }
+
+    public String getTrends(int years) {
+        String yearsString = String.valueOf(years) + " an";
+        if (years > 1) yearsString += "s";
+        String trends;
+        try {
+            trends = this.trends.get(yearsString);
+        } catch (NullPointerException npe) {
+            trends = null;
+        }
         return trends;
     }
 

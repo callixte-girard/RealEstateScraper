@@ -55,9 +55,10 @@ public class Disp {
 	}
 
 	public static void progress(String label, int nb_actuel, int nb_total) {
-		anyType(">>> Progress of [ " + label + " ] : " + nb_actuel + " / " + nb_total
-				+ " | " + ( 100.0 * nb_actuel / nb_total ) + " %"
-			);
+		String percentDisp;
+		percentDisp = String.valueOf( 100.0 * nb_actuel / nb_total );
+		if (percentDisp.length() > 5) percentDisp = percentDisp.substring(0, 6);
+		anyType(">>> " + label + " : " + nb_actuel + " / " + nb_total + " | " + percentDisp + " %");
 	}
 
 	public static void shortMsgStar(String msg, boolean wrapped) {

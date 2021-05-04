@@ -6,6 +6,15 @@ import static myJavaClasses.Misc.jsonifyArrayIntoString;
 
 public class Prices implements Serializable {
 
+    public static final String label_pricesMeanBuyFlat = "Prix d'achat moyen appartement";
+    public static final String label_pricesMeanRentFlat = "Prix de location moyen appartement";
+    public static final String label_pricesMeanBuyHouse = "Prix d'achat moyen maison";
+
+    public static final String label_pricesTrends1y = "Evolution prix immobilier 1 an";
+    public static final String label_pricesTrends2y = "Evolution prix immobilier 2 ans";
+    public static final String label_pricesTrends5y = "Evolution prix immobilier 5 ans";
+
+
     // type : false == buy, true == rent
     private boolean rent;
     // type 2 : false == house, true == flat
@@ -57,12 +66,18 @@ public class Prices implements Serializable {
     }
 
     public String getMeanAsAmount() {
-        return String
-                .valueOf(this.getMean())
-                // quick fixes for csv export
-                .replace(".0" , "")
+        String meanAsAmount;
+        try {
+            meanAsAmount = String
+                    .valueOf(this.getMean())
+                    // quick fixes for csv export
+                    .replace(".0" , "")
 //                .replace("." , ",") // this one would better be done later, directly in excel.
-        ;
+            ;
+        } catch (NullPointerException npe) {
+            meanAsAmount = null;
+        }
+        return meanAsAmount;
     }
 
     public void setMean(double mean) {
