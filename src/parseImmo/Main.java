@@ -22,11 +22,9 @@ import static myJavaClasses.Misc.cleanValue;
 
 public class Main {
     private static final String projectName = "RealEstateScraper" ;
-
     // urls
     private static final String url_main = "https://www.meilleursagents.com" ;
     private static final String url_sub = "/prix-immobilier" ;
-
     // folder names
     private static final String save_folder = "data_saved/";
     private static final String output_folder = "data_output/";
@@ -50,7 +48,8 @@ public class Main {
             "77", "78", "91", "95", // grande couronne
 //            "60", // Oise : Creil & co
     };
-    public static boolean onlyExport = false; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
+    // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
+    public static boolean skipVpnInit = false; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
     public static boolean shortcutMode = false; // scrapes only 20 first cities and then saves immediately
 
 
@@ -77,7 +76,7 @@ public class Main {
         ReadWriteFile.createFolderIfNotExists(save_path);
         ReadWriteFile.createFolderIfNotExists(output_path);
 
-        if (! onlyExport) {
+        if (!skipVpnInit) {
             HandleVPN.initAllRegions();
             HandleVPN.displayCurrentRegionAndIP();
         }
@@ -320,12 +319,14 @@ public class Main {
                 List<String> headers = new ArrayList<>();
                 String[] basicHeaders = {
                         // main infos
-//                        "url",
+                        "URL",
                         City.label_dptNumber,
                         City.label_name,
                         // prices
                         Prices.label_pricesMeanBuyFlat,
                         Prices.label_pricesMeanRentFlat,
+                        Prices.label_pricesMeanBuyHouse,
+                        // trends
                         Prices.label_pricesTrends1y,
                         Prices.label_pricesTrends2y,
                         Prices.label_pricesTrends5y,
@@ -481,7 +482,6 @@ public class Main {
                 // old version
 //                ReadWriteFile.writeLineCSV(bw, Arrays.asList(localAttrs), true);
             }
-
             bw.close();
             Disp.shortMsgStar("WRITING TO .csv FILE FINISHED", true);
         }
@@ -489,6 +489,5 @@ public class Main {
             e.printStackTrace();
         }
     }
-
 
 }
