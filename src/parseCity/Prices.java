@@ -1,8 +1,8 @@
 package parseCity;
 
-import java.io.Serializable;
+import myJavaClasses.ReadWriteFile;
 
-import static myJavaClasses.Misc.jsonifyArrayIntoString;
+import java.io.Serializable;
 
 public class Prices implements Serializable {
 
@@ -18,7 +18,7 @@ public class Prices implements Serializable {
     // type : false == buy, true == rent
     private boolean rent;
     // type 2 : false == house, true == flat
-    private boolean flat;
+    private boolean appt;
     // medium price
     private double mean;
     // upper and lower end of 95% items
@@ -44,7 +44,7 @@ public class Prices implements Serializable {
     public String toString() {
         String out = "Prices{";
         if (rent) out += "rent"; else out += "buy";
-        if (flat) out += " flat"; else out += " house";
+        if (appt) out += " flat"; else out += " house";
         out +=
                 ": lowest=" + lowest +
                 ", mean=" + mean +
@@ -53,9 +53,9 @@ public class Prices implements Serializable {
         return out;
     }
 
-    public Prices(boolean rent, boolean flat, double mean, double highest, double lowest) {
+    public Prices(boolean rent, boolean appt, double mean, double highest, double lowest) {
         this.rent = rent;
-        this.flat = flat;
+        this.appt = appt;
         this.mean = mean;
         this.highest = highest;
         this.lowest = lowest;
@@ -64,57 +64,20 @@ public class Prices implements Serializable {
     public double getMean() {
         return this.mean;
     }
-
     public String getMeanAsAmount() {
-        String meanAsAmount;
+        String out;
         try {
-            meanAsAmount = String
-                    .valueOf(this.getMean())
-                    // quick fixes for csv export
-                    .replace(".0" , "")
-//                .replace("." , ",") // this one would better be done later, directly in excel.
-            ;
+            out = String.valueOf(this.getMean()).replace(".0" , "");
         } catch (NullPointerException npe) {
-            meanAsAmount = null;
+            out = ReadWriteFile.NO_DATA;
         }
-        return meanAsAmount;
+        return out;
     }
-
-    public void setMean(double mean) {
-        this.mean = mean;
-    }
-
-    public double getHighest() {
-        return this.highest;
-    }
-
-    public void setHighest(double highest) {
-        this.highest = highest;
-    }
-
-    public double getLowest() {
-        return this.lowest;
-    }
-
-    public void setLowest(double lowest) {
-        this.lowest = lowest;
-    }
-
     public boolean isRent() {
         return this.rent;
     }
-
-    public void setRent(boolean rent) {
-        this.rent = rent;
+    public boolean isAppt() {
+        return this.appt;
     }
-
-    public boolean isFlat() {
-        return this.flat;
-    }
-
-    public void setFlat(boolean flat) {
-        this.flat = flat;
-    }
-
 
 }

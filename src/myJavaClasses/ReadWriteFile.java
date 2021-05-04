@@ -3,9 +3,13 @@ package myJavaClasses;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ReadWriteFile
 {
+    public static final String NO_DATA = "null";
+
+
     public static ArrayList<File> getFolderContentsAsFileArray(String full_path)
     {
         File folder = new File(full_path);
@@ -71,6 +75,27 @@ public class ReadWriteFile
 
         return br ;
     }
-    
+
+
+    public static void writeLineCSV(BufferedWriter bw, List<String> attrsToWrite, boolean endOfLine) {
+        try
+        {
+            int attr_index = 0;
+            for (String attr : attrsToWrite)
+            {
+                if (attr != null) bw.write(attr);
+                else bw.write(NO_DATA);
+
+                attr_index ++;
+                if (attr_index < attrsToWrite.size()) {
+                    bw.write(",");
+                } else if (! endOfLine) {
+                    bw.write(",");
+                }
+            }
+            if (endOfLine) bw.newLine();
+
+        } catch (IOException e) { Disp.exc(e); }
+    }
 
 }

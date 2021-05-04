@@ -30,7 +30,8 @@ public class ParseCity {
         postalCode = spl[1];
 
         // >>> buy
-        Prices pricesBuyAppt, pricesBuyHouse;
+//        Prices pricesBuyAppt, pricesBuyHouse;
+        String pricesBuyAppt, pricesBuyHouse;
         try {
             pricesBuyAppt = ExtractPrices.extr(doc, false, true);
         } catch (NullPointerException e) { pricesBuyAppt = null; }
@@ -39,13 +40,14 @@ public class ParseCity {
         } catch (NullPointerException e) { pricesBuyHouse = null; }
 
         // >>> rent
-        Prices pricesRentAppt, pricesRentHouse;
+//        Prices pricesRentAppt, pricesRentHouse;
+        String pricesRentAppt, pricesRentHouse;
         try {
             pricesRentAppt = ExtractPrices.extr(doc, true, true);
         } catch (NullPointerException e) { pricesRentAppt = null; }
-        /*try { // rent houses : doesn't exist on website
+        try { // rent houses : doesn't exist on website
             pricesRentHouse = ExtractPrices.extr(doc, true, false);
-        } catch (NullPointerException e) { pricesRentHouse = null; }*/
+        } catch (NullPointerException e) { pricesRentHouse = null; }
 
         // >>> evolution for last years
         LinkedHashMap<String, String> trends = ExtractTrends.extr(doc);
@@ -73,7 +75,7 @@ public class ParseCity {
                 doc, url, name,
                 postalCode,
                 pricesBuyAppt, pricesBuyHouse,
-                pricesRentAppt, //pricesRentHouse,
+                pricesRentAppt, pricesRentHouse,
                 trends,
                 allLocalInfos,
                 localPop, localHomes, localRevenueEmpl

@@ -1,11 +1,14 @@
 package parseCity;
 
 import myJavaClasses.Misc;
+import myJavaClasses.ReadWriteFile;
 import org.jsoup.nodes.Document;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+
+import static myJavaClasses.Misc.cleanValue;
 
 
 public class City implements Serializable {
@@ -16,7 +19,9 @@ public class City implements Serializable {
 
 //    private Document doc;
     private String url, name, postalCode;
-    private Prices pricesBuyAppt, pricesBuyHouse, pricesRentAppt/*, pricesRentHouse */;
+//    private Prices pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
+    private String pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
+
     private LinkedHashMap<String, String> trends, allLocalInfos, localPop, localHomes, localRevenueEmpl;
 
     // construc
@@ -25,10 +30,14 @@ public class City implements Serializable {
             String url,
             String name,
             String postalCode,
-            Prices pricesBuyAppt,
-            Prices pricesBuyHouse,
-            Prices pricesRentAppt,
+//            Prices pricesBuyAppt,
+//            Prices pricesBuyHouse,
+//            Prices pricesRentAppt,
 //            Prices pricesRentHouse,
+            String pricesBuyAppt,
+            String pricesBuyHouse,
+            String pricesRentAppt,
+            String pricesRentHouse,
             LinkedHashMap<String, String> trends,
             LinkedHashMap<String, String> allLocalInfos,
             LinkedHashMap<String, String> localPop,
@@ -42,7 +51,7 @@ public class City implements Serializable {
         this.pricesBuyAppt = pricesBuyAppt;
         this.pricesBuyHouse = pricesBuyHouse;
         this.pricesRentAppt = pricesRentAppt;
-//        this.pricesRentHouse = pricesRentHouse;
+        this.pricesRentHouse = pricesRentHouse;
         this.trends = trends;
         this.allLocalInfos = allLocalInfos;
         this.localPop = localPop;
@@ -124,124 +133,69 @@ public class City implements Serializable {
         return Misc.jsonifyArrayIntoString(node_name, arr, true);
     }
 */
-    // getters and setters
-//    public Document getDoc() {
-//        return doc;
-//    }
-
-//    public void setDoc(Document doc) {
-//        this.doc = doc;
-//    }
 
     public String getUrl() {
         return url;
     }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     public String getName() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Prices getPricesBuyAppt() {
+    public String getPricesBuyAppt() {
         return pricesBuyAppt;
     }
-
-    public void setPricesBuyAppt(Prices pricesBuyAppt) {
-        this.pricesBuyAppt = pricesBuyAppt;
-    }
-
-    public Prices getPricesBuyHouse() {
+    public String getPricesBuyHouse() {
         return pricesBuyHouse;
     }
-
-    public void setPricesBuyHouse(Prices pricesBuyHouse) {
-        this.pricesBuyHouse = pricesBuyHouse;
-    }
-
-    public Prices getPricesRentAppt() {
+    public String getPricesRentAppt() {
         return pricesRentAppt;
     }
-
-    public void setPricesRentAppt(Prices pricesRentAppt) {
-        this.pricesRentAppt = pricesRentAppt;
+    public String getPricesRentHouse() {
+        return pricesRentHouse;
     }
-
+//    public Prices getPricesBuyAppt() {
+//        return pricesBuyAppt;
+//    }
+//    public Prices getPricesBuyHouse() {
+//        return pricesBuyHouse;
+//    }
+//    public Prices getPricesRentAppt() {
+//        return pricesRentAppt;
+//    }
 //    public Prices getPricesRentHouse() {
 //        return pricesRentHouse;
 //    }
-
-//    public void setPricesRentHouse(Prices pricesRentHouse) {
-//        this.pricesRentHouse = pricesRentHouse;
-//    }
-
     public LinkedHashMap<String, String> getLocalPop() {
         return localPop;
     }
-
-    public void setLocalPop(LinkedHashMap<String, String> localPop) {
-        this.localPop = localPop;
-    }
-
     public LinkedHashMap<String, String> getLocalHomes() {
         return localHomes;
     }
-
-    public void setLocalHomes(LinkedHashMap<String, String> localHomes) {
-        this.localHomes = localHomes;
-    }
-
     public LinkedHashMap<String, String> getLocalRevenueEmpl() {
         return localRevenueEmpl;
     }
-
-    public void setLocalRevenueEmpl(LinkedHashMap<String, String> localRevenueEmpl) {
-        this.localRevenueEmpl = localRevenueEmpl;
-    }
-
-    public String getPostalCode() {
-        return this.postalCode;
-    }
-
     public String getPostalCodeAsDptNumber() {
         return this.postalCode.substring(0, 2);
     }
-
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public LinkedHashMap<String, String> getTrends() {
-        return this.trends;
-    }
-
     public String getTrends(int years) {
-        String yearsString = String.valueOf(years) + " an";
+        String yearsString = years + " an";
         if (years > 1) yearsString += "s";
-        String trends;
-        try {
-            trends = this.trends.get(yearsString);
-        } catch (NullPointerException npe) {
-            trends = null;
-        }
+        String trends = this.trends.get(yearsString);
         return trends;
     }
-
-    public void setTrends(LinkedHashMap<String, String> trends) {
-        this.trends = trends;
-    }
-
-    public LinkedHashMap<String, String> getAllLocalInfos() {
-        return allLocalInfos;
-    }
-
-    public void setAllLocalInfos(LinkedHashMap<String, String> allLocalInfos) {
-        this.allLocalInfos = allLocalInfos;
+    /*public String getMeanPrice(boolean rent, boolean appt)
+    {
+        if (rent && appt) return cleanValue(getPricesRentAppt()).getMeanAsAmount();
+        else if (! rent && appt) return cleanValue(getPricesBuyAppt()).getMeanAsAmount();
+        else if (! rent) return cleanValue(getPricesBuyHouse()).getMeanAsAmount();
+//        else return clean(getPricesRentHouse()).getMeanAsAmount();
+        else return ReadWriteFile.NO_DATA;
+    }*/
+    public String getMeanPrice(boolean rent, boolean appt)
+    {
+        if (rent && appt) return cleanValue(getPricesRentAppt());
+        else if (! rent && appt) return cleanValue(getPricesBuyAppt());
+        else if (! rent) return cleanValue(getPricesBuyHouse());
+//        else return clean(getPricesRentHouse());
+        else return ReadWriteFile.NO_DATA;
     }
 }

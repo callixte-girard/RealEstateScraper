@@ -91,7 +91,7 @@ public class ExtractLocalInfos {
             String label = labels[i];
             String value = allLocalInfos.get(label);
 
-            // pre-process data TODO: complete
+            // pre-process data // NOTE: outdated, already present somewhere else
             boolean preprocessData = false;
             if (preprocessData) {
                 switch (label) {
@@ -125,7 +125,6 @@ public class ExtractLocalInfos {
         }
         return infos;
     }
-
 
     protected static LinkedHashMap<String, String> localPop(LinkedHashMap<String, String> allLocalInfos)
     {

@@ -1,6 +1,8 @@
 package myJavaClasses;
 
 
+import parseImmo.Process;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,6 +18,25 @@ import java.util.LinkedHashMap;
 
 public class Misc {
 
+    public static String cleanValue(String value) {
+//        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
+        try {
+            value = Misc.valueNormalise(value);
+        } catch (NullPointerException e) {
+            value = ReadWriteFile.NO_DATA;
+        }
+        return value;
+    }
+
+    public static String cleanValue(String value, Process process) {
+//        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
+        try {
+            value = Misc.valueNormalise(process.forExcel(value));
+        } catch (NullPointerException e) {
+            value = ReadWriteFile.NO_DATA;
+        }
+        return value;
+    }
 
     public static String removeNonNumericalCharsFromString(String to_treat) {
         String out = to_treat
