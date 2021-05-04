@@ -15,8 +15,8 @@ public class IP implements Serializable {
     // above which number of failures each IP is considered blocked
     public static final int nb_max_each_ip = 1; // should stay at 1, because an IP is blocked for 24H after one round (25 requests in few seconds)
 
-    public static final String NO_IP = "Unknown";
-    public static final String NO_DATE = "°";
+    public static final String NO_IP = "NO IP";
+//    public static final String NO_DATE = "°";
 
     private String address;
 //    private int timesUsed = 0;

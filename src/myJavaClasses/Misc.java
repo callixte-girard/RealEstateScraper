@@ -17,25 +17,36 @@ import java.util.LinkedHashMap;
 
 
 public class Misc {
+    public static final String NO_DATA = "Inconnu";
 
-    public static String cleanValue(String value) {
+
+    public static String clean(String value) {
 //        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
         try {
             value = Misc.valueNormalise(value);
         } catch (NullPointerException e) {
-            value = ReadWriteFile.NO_DATA;
+            value = Misc.NO_DATA;
         }
         return value;
     }
 
-    public static String cleanValue(String value, Process process) {
-//        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
+    public static String clean(String value, Process process) {
+//        Disp.anyType("test : "); Disp.anyTypeThenLine(value);
         try {
             value = Misc.valueNormalise(process.forExcel(value));
         } catch (NullPointerException e) {
-            value = ReadWriteFile.NO_DATA;
+            value = Misc.NO_DATA;
         }
         return value;
+    }
+
+    public static String cleanAmount(String to_process, String currency, boolean replaceDotWithComma, boolean removePlusSign) {
+        to_process = to_process.replace(currency, "");
+        if (replaceDotWithComma) to_process = to_process.replace(".",",");
+        if (removePlusSign) to_process = to_process.replace("+", "");
+        to_process = to_process.trim();
+//        Disp.anyType(to_process);
+        return to_process;
     }
 
     public static String removeNonNumericalCharsFromString(String to_treat) {
@@ -49,7 +60,7 @@ public class Misc {
         String out = to_format
                 .replaceAll("\\s", "") // removes breaking whitespaces
                 .replaceAll("\\p{Z}", "") // removes non-breaking whitespaces
-                .replaceAll("," , ".") // quick fix for , and .
+//                .replaceAll("," , ".") // quick fix for , and .
                 ;
 //        Disp.anyType(out);
         return out;

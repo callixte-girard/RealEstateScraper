@@ -1,14 +1,13 @@
 package parseCity;
 
 import myJavaClasses.Misc;
-import myJavaClasses.ReadWriteFile;
 import org.jsoup.nodes.Document;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import static myJavaClasses.Misc.cleanValue;
+import static myJavaClasses.Misc.clean;
 
 
 public class City implements Serializable {
@@ -152,18 +151,6 @@ public class City implements Serializable {
     public String getPricesRentHouse() {
         return pricesRentHouse;
     }
-//    public Prices getPricesBuyAppt() {
-//        return pricesBuyAppt;
-//    }
-//    public Prices getPricesBuyHouse() {
-//        return pricesBuyHouse;
-//    }
-//    public Prices getPricesRentAppt() {
-//        return pricesRentAppt;
-//    }
-//    public Prices getPricesRentHouse() {
-//        return pricesRentHouse;
-//    }
     public LinkedHashMap<String, String> getLocalPop() {
         return localPop;
     }
@@ -173,29 +160,24 @@ public class City implements Serializable {
     public LinkedHashMap<String, String> getLocalRevenueEmpl() {
         return localRevenueEmpl;
     }
+
     public String getPostalCodeAsDptNumber() {
         return this.postalCode.substring(0, 2);
     }
+
     public String getTrends(int years) {
         String yearsString = years + " an";
         if (years > 1) yearsString += "s";
         String trends = this.trends.get(yearsString);
         return trends;
     }
-    /*public String getMeanPrice(boolean rent, boolean appt)
-    {
-        if (rent && appt) return cleanValue(getPricesRentAppt()).getMeanAsAmount();
-        else if (! rent && appt) return cleanValue(getPricesBuyAppt()).getMeanAsAmount();
-        else if (! rent) return cleanValue(getPricesBuyHouse()).getMeanAsAmount();
-//        else return clean(getPricesRentHouse()).getMeanAsAmount();
-        else return ReadWriteFile.NO_DATA;
-    }*/
+
     public String getMeanPrice(boolean rent, boolean appt)
     {
-        if (rent && appt) return cleanValue(getPricesRentAppt());
-        else if (! rent && appt) return cleanValue(getPricesBuyAppt());
-        else if (! rent) return cleanValue(getPricesBuyHouse());
+        if (rent && appt) return clean(getPricesRentAppt());
+        else if (! rent && appt) return clean(getPricesBuyAppt());
+        else if (! rent) return clean(getPricesBuyHouse());
 //        else return clean(getPricesRentHouse());
-        else return ReadWriteFile.NO_DATA;
+        else return Misc.NO_DATA;
     }
 }

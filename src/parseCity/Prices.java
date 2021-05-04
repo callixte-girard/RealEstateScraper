@@ -1,5 +1,6 @@
 package parseCity;
 
+import myJavaClasses.Misc;
 import myJavaClasses.ReadWriteFile;
 
 import java.io.Serializable;
@@ -69,7 +70,7 @@ public class Prices implements Serializable {
         try {
             out = String.valueOf(this.getMean()).replace(".0" , "");
         } catch (NullPointerException npe) {
-            out = ReadWriteFile.NO_DATA;
+            out = Misc.NO_DATA;
         }
         return out;
     }

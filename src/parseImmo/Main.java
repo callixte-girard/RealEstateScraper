@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static myJavaClasses.Misc.cleanValue;
+import static myJavaClasses.Misc.clean;
 
 
 public class Main {
@@ -48,6 +48,7 @@ public class Main {
             "77", "78", "91", "95", // grande couronne
 //            "60", // Oise : Creil & co
     };
+    public static String csvSeparator = ";"; // because dots are replaced by commas
     // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
     public static boolean skipVpnInit = false; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
     public static boolean shortcutMode = false; // scrapes only 20 first cities and then saves immediately
@@ -55,6 +56,11 @@ public class Main {
 
     public static void main_(String[] args) throws Exception
     {
+        String test = "...";
+        test = test.replace(".","o");
+        Disp.anyType(test);
+        // test passed ! .replace(String target) replace ALL occurences.
+
 //        HandleVPN.initAllRegions();
         // check if VPN is connected or not.
 
@@ -349,7 +355,7 @@ public class Main {
                 };
                 headers.addAll(Arrays.asList(basicHeaders));
                 headers.addAll(Arrays.asList(localInfosHeaders));
-                ReadWriteFile.writeLineCSV(bw, headers, true);
+                ReadWriteFile.writeLineCSV(bw, headers, csvSeparator, true);
             }
 
             // II. then writes data cell by cell
@@ -358,116 +364,90 @@ public class Main {
 //                Disp.anyTypeThenLine(city);
 
                 // II.A. basic infos
-                // 1) get them raw (always available)
-                // 2) craft the array
                 String cityUrl = city.getUrl();
                 String cityName = city.getName();
                 String cityDpt = city.getPostalCodeAsDptNumber();
                 String[] basicAttrs = { cityUrl, cityDpt, cityName };
 
+                // define clean process methods
+                // 1) just remove text (numbers are already integers)
+                Process cleanPopulation = value -> value.replace(" habitants", "");
+                Process cleanHomes = value -> value.replace(" logements", "");
+                // 2) convert floating numbers and amounts
+                Process cleanAmount = value -> Misc.cleanAmount(value, "€", true, true);
+                // 3) convert floating numbers and amounts + remove text
+                Process cleanAge = value -> cleanAmount.forExcel(value.replace(" ans", ""));
+                Process cleanPopulationByArea = value -> cleanAmount.forExcel(value.replace(" hab. / km²", ""));
+                Process cleanArea = value -> cleanAmount.forExcel(value.replace(" km²", ""));
+                Process cleanToPureNumber = value -> cleanAmount.forExcel(Misc.removeNonNumericalCharsFromString(value));
+                Process cleanPoints = value -> cleanAmount.forExcel(value.replace(" pt.", ""));
+
                 // II.B. prices
-                // 1) TODO: define clean processes
-                // 2) get them raw (with error wrapper)
-                // 3) craft the array
                 // II.B.a. mean prices for buy & rent
-                String pricesMeanBuyAppt = cleanValue(city.getMeanPrice(false, true));
-                String pricesMeanRentAppt = cleanValue(city.getMeanPrice(true, true));
-                String pricesMeanBuyHouse = cleanValue(city.getMeanPrice(false, false)); // NOTE: we'll just ignore houses for now and limit ourselves to apartments
-                // old way
-//                String pricesMeanBuyAppt = cleanValue(city.getPricesBuyAppt().getMeanAsAmount());
-//                String pricesMeanRentAppt = cleanValue(city.getPricesRentAppt().getMeanAsAmount());
-//                String pricesMeanBuyHouse = cleanValue(city.getPricesBuyHouse().getMeanAsAmount()); // NOTE: we'll just ignore houses for now and limit ourselves to apartments
+                String pricesMeanBuyAppt = Misc.clean(city.getMeanPrice(false, true), cleanAmount);
+                String pricesMeanRentAppt = Misc.clean(city.getMeanPrice(true, true), cleanAmount);
+                String pricesMeanBuyHouse = Misc.clean(city.getMeanPrice(false, false), cleanAmount); // NOTE: we'll just ignore houses for now and limit ourselves to apartments
                 String[] pricesAttrs = { pricesMeanBuyAppt, pricesMeanRentAppt, pricesMeanBuyHouse, };
                 // II.B.b. prices trends for last years
-                String pricesTrends1y = cleanValue(city.getTrends(1));
-                String pricesTrends2y = cleanValue(city.getTrends(2));
-                String pricesTrends5y = cleanValue(city.getTrends(5));
+                String pricesTrends1y = Misc.clean(city.getTrends(1), cleanAmount);
+                String pricesTrends2y = Misc.clean(city.getTrends(2), cleanAmount);
+                String pricesTrends5y = Misc.clean(city.getTrends(5), cleanAmount);
                 String[] trendsAttrs = { pricesTrends1y, pricesTrends2y, pricesTrends5y };
 
                 // II.C. local infos
-                // 1) define clean processes
-                // 2) get them raw (with error wrapper)
-                // 3) craft the array
-                // II.C.a. population
-                Process cleanPopulation = value -> value.replace(" habitants", "");
-                String population = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label01_population), cleanPopulation);
-                String rateDemograhicGrowth = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label02_rateDemographicGrowth));
-                Process cleanAge = value -> value.replace(" ans", "");
-                String medianAge = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label03_medianAge), cleanAge);
-                String lessThan25yo = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label04_lessThan25yo), cleanAge);
-                String moreThan25yo = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label05_moreThan25yo), cleanAge);
-                Process cleanPopulationByArea = value -> value.replace(" hab. / km²", "");
-                String popDensity = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label06_popDensity), cleanPopulationByArea);
-                Process cleanArea = value -> value.replace(" km²", "");
-                String area = cleanValue(city.getLocalPop().get(ExtractLocalInfos.label07_area), cleanArea);
+                // II.C.b. homes
+                String population = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label01_population), cleanPopulation);
+                String rateDemograhicGrowth = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label02_rateDemographicGrowth), cleanAmount);
+                String medianAge = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label03_medianAge), cleanAge);
+                String lessThan25yo = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label04_lessThan25yo), cleanAge);
+                String moreThan25yo = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label05_moreThan25yo), cleanAge);
+                String popDensity = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label06_popDensity), cleanPopulationByArea);
+                String area = Misc.clean(city.getLocalPop().get(ExtractLocalInfos.label07_area), cleanArea);
                 String[] popAttrs = {
                         population, rateDemograhicGrowth,
                         medianAge, lessThan25yo, moreThan25yo,
                         popDensity, area,
                 };
                 // II.C.b. homes
-                Process cleanHomes = value -> value.replace(" logements", "");
-                String totalNbHomes = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label08_totalNbHomes), cleanHomes);
-                String rateMainHomes = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label09_rateMainHomes));
-                String rateSecondaryHomes = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label10_rateSecondaryHomes));
-                String rateVacantHomes = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label11_rateVacantHomes));
-                String rateSocialHomes = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label12_rateSocialHomes));
-                String rateMainHomeOwner = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label13_rateMainHomeOwner));
-                String rateMainHomeTenant = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label14_rateMainHomeTenant));
-                String rateMainHome1Room = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label15_rateMainHome1Room));
-                String rateMainHome2Rooms = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label16_rateMainHome2Rooms));
-                String rateMainHome3Rooms = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label17_rateMainHome3Rooms));
-                String rateMainHome4Rooms = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label18_rateMainHome4Rooms));
-                String rateMainHome5RoomsMore = cleanValue(city.getLocalHomes().get(ExtractLocalInfos.label19_rateMainHome5RoomsMore));
+                String totalNbHomes = Misc.clean(city.getLocalHomes().get(ExtractLocalInfos.label08_totalNbHomes), cleanHomes);
+                String rateMainHomes = clean(city.getLocalHomes().get(ExtractLocalInfos.label09_rateMainHomes), cleanAmount);
+                String rateSecondaryHomes = clean(city.getLocalHomes().get(ExtractLocalInfos.label10_rateSecondaryHomes), cleanAmount);
+                String rateVacantHomes = clean(city.getLocalHomes().get(ExtractLocalInfos.label11_rateVacantHomes), cleanAmount);
+                String rateSocialHomes = clean(city.getLocalHomes().get(ExtractLocalInfos.label12_rateSocialHomes), cleanAmount);
+                String rateMainHomeOwner = clean(city.getLocalHomes().get(ExtractLocalInfos.label13_rateMainHomeOwner), cleanAmount);
+                String rateMainHomeTenant = clean(city.getLocalHomes().get(ExtractLocalInfos.label14_rateMainHomeTenant), cleanAmount);
+                String rateMainHome1Room = clean(city.getLocalHomes().get(ExtractLocalInfos.label15_rateMainHome1Room), cleanAmount);
+                String rateMainHome2Rooms = clean(city.getLocalHomes().get(ExtractLocalInfos.label16_rateMainHome2Rooms), cleanAmount);
+                String rateMainHome3Rooms = clean(city.getLocalHomes().get(ExtractLocalInfos.label17_rateMainHome3Rooms), cleanAmount);
+                String rateMainHome4Rooms = clean(city.getLocalHomes().get(ExtractLocalInfos.label18_rateMainHome4Rooms), cleanAmount);
+                String rateMainHome5RoomsMore = clean(city.getLocalHomes().get(ExtractLocalInfos.label19_rateMainHome5RoomsMore), cleanAmount);
                 String[] homesAttrs = {
                         totalNbHomes, rateMainHomes, rateSecondaryHomes, rateVacantHomes,
                         rateSocialHomes, rateMainHomeOwner, rateMainHomeTenant,
                         rateMainHome1Room, rateMainHome2Rooms, rateMainHome3Rooms, rateMainHome4Rooms, rateMainHome5RoomsMore,
                 };
                 // II.C.c. revenue / employment
-                Process cleanToPureNumber = Misc::removeNonNumericalCharsFromString;
-                String medianAnnualRevenue = cleanValue(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label20_medianAnnualRevenue), cleanToPureNumber);
-                Process cleanPoints = value -> value.replace(" pt.", "");
-                String employmentRate15To64 = cleanValue(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label21_employmentRate15To64));
-                String employmentRateEvol = cleanValue(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label22_employmentRateEvol), cleanPoints);
-                String unemploymentRate15To64 = cleanValue(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label23_unemploymentRate15To64));
-                String unemploymentRateEvol = cleanValue(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label24_unemploymentRateEvol), cleanPoints);
+                String medianAnnualRevenue = Misc.clean(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label20_medianAnnualRevenue), cleanToPureNumber);
+                String employmentRate15To64 = clean(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label21_employmentRate15To64), cleanAmount);
+                String employmentRateEvol = Misc.clean(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label22_employmentRateEvol), cleanPoints);
+                String unemploymentRate15To64 = clean(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label23_unemploymentRate15To64), cleanAmount);
+                String unemploymentRateEvol = Misc.clean(city.getLocalRevenueEmpl().get(ExtractLocalInfos.label24_unemploymentRateEvol), cleanPoints);
                 String[] revenueEmploymentAttrs = {
                         medianAnnualRevenue,
                         employmentRate15To64, employmentRateEvol,
                         unemploymentRate15To64, unemploymentRateEvol,
                 };
 
-                // old version
-                /*String[] localAttrs = {
-                        // population
-                        population, rateDemograhicGrowth,
-                        medianAge, lessThan25yo, moreThan25yo,
-                        popDensity, area,
-                        // homes
-                        totalNbHomes,
-                        rateMainHomes, rateSecondaryHomes,
-                        rateVacantHomes, rateSocialHomes,
-                        rateMainHomeOwner, rateMainHomeTenant,
-                        rateMainHome1Room, rateMainHome2Rooms, rateMainHome3Rooms, rateMainHome4Rooms, rateMainHome5RoomsMore,
-                        // revenue / employment
-                        medianAnnualRevenue,
-                        employmentRate15To64, employmentRateEvol,
-                        unemploymentRate15To64, unemploymentRateEvol,
-                };*/
-
                 // III. put everything together
                 // 1) basic : always present
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(basicAttrs), false);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(basicAttrs), csvSeparator,false);
                 // 2) prices & trends
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(pricesAttrs), false);
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(trendsAttrs), false);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(pricesAttrs), csvSeparator,false);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(trendsAttrs), csvSeparator,false);
                 // 3) local infos
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(popAttrs), false);
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(homesAttrs), false);
-                ReadWriteFile.writeLineCSV(bw, Arrays.asList(revenueEmploymentAttrs), true);
-                // old version
-//                ReadWriteFile.writeLineCSV(bw, Arrays.asList(localAttrs), true);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(popAttrs), csvSeparator,false);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(homesAttrs), csvSeparator,false);
+                ReadWriteFile.writeLineCSV(bw, Arrays.asList(revenueEmploymentAttrs), csvSeparator,true);
             }
             bw.close();
             Disp.shortMsgStar("WRITING TO .csv FILE FINISHED", true);

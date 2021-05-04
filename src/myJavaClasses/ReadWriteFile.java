@@ -7,7 +7,6 @@ import java.util.List;
 
 public class ReadWriteFile
 {
-    public static final String NO_DATA = "null";
 
 
     public static ArrayList<File> getFolderContentsAsFileArray(String full_path)
@@ -77,20 +76,21 @@ public class ReadWriteFile
     }
 
 
-    public static void writeLineCSV(BufferedWriter bw, List<String> attrsToWrite, boolean endOfLine) {
+    public static void writeLineCSV(BufferedWriter bw, List<String> attrsToWrite, String separator, boolean endOfLine)
+    {
         try
         {
             int attr_index = 0;
             for (String attr : attrsToWrite)
             {
                 if (attr != null) bw.write(attr);
-                else bw.write(NO_DATA);
+                else bw.write(Misc.NO_DATA);
 
                 attr_index ++;
                 if (attr_index < attrsToWrite.size()) {
-                    bw.write(",");
+                    bw.write(separator);
                 } else if (! endOfLine) {
-                    bw.write(",");
+                    bw.write(separator);
                 }
             }
             if (endOfLine) bw.newLine();
