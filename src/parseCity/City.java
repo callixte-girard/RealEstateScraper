@@ -128,6 +128,12 @@ public class City implements Serializable {
         return trends;
     }
 
+    public String getTrends(int years, int months) {
+        String monthsString = months + " mois";
+        String trends = this.trends.get(monthsString);
+        return trends;
+    }
+
     public String getMeanPrice(boolean rent, boolean appt)
     {
         if (rent && appt) return clean(getPricesRentAppt());

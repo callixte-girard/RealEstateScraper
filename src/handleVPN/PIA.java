@@ -44,8 +44,15 @@ public class PIA
 //    public static String getNextRegion() { return null; }
 //    public static String getNextUnsaturatedRegion() { return null; }
 
-    public static String getCurrentRegion() { return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0); }
-    public static String getCurrentIP() { return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0); }
+    public static String getCurrentRegion() {
+        return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
+    }
+    public static String getCurrentIP() {
+        return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
+    }
+    public static boolean isConnected() {
+        return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0).equals(STATUS_CONNECTED);
+    }
 
     public static void displayCurrentRegionAndIP() {
         // get current region and ip
@@ -64,17 +71,24 @@ public class PIA
         return false;
     }
 
+
     public static String changeIP()
     {
         String oldIP = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
         reconnect();
         String newIP = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
+
         if (oldIP.equals(newIP)) {
-            Disp.anyType("Same IP obtained. Trying again...");
+//            Disp.anyType("The obtained IP is the same as before : [ " + oldIP + " ]. Trying again...");
+            Disp.anyType("The obtained IP is the same as before. Trying again...");
             return changeIP();
+        } else {
+//            Disp.anyType("Old IP : " + oldIP);
+//            Disp.anyType("IP change : [ " + newIP + " ] <— [ " + oldIP + " ]");
+//            Disp.anyType("IP change : [ " + oldIP + " ] —> [ " + newIP + " ]");
+            Disp.anyType("A new IP has been obtained :)");
+            return newIP;
         }
-//        Disp.anyType("IP change : [ " + newIP + " ] <— [ " + oldIP + " ]");
-        return newIP;
     }
 
     public static String changeRegion()

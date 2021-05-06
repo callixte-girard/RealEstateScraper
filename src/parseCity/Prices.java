@@ -11,9 +11,12 @@ public class Prices implements Serializable {
     public static final String label_pricesMeanRentFlat = "Prix de location moyen appartement";
     public static final String label_pricesMeanBuyHouse = "Prix d'achat moyen maison";
 
+    public static final String label_pricesTrends1m = "Evolution prix immobilier 1 mois";
+    public static final String label_pricesTrends3m = "Evolution prix immobilier 3 mois";
     public static final String label_pricesTrends1y = "Evolution prix immobilier 1 an";
     public static final String label_pricesTrends2y = "Evolution prix immobilier 2 ans";
     public static final String label_pricesTrends5y = "Evolution prix immobilier 5 ans";
+    public static final String label_pricesTrends10y = "Evolution prix immobilier 10 ans";
 
 
     // type : false == buy, true == rent

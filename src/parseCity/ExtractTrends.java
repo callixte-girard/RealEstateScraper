@@ -31,7 +31,7 @@ public class ExtractTrends {
                     .replaceAll("," , ".") // quick fix for , to .
             ;
 
-//            Disp.anyTypeThenLine(trendPeriod_raw + " | " + trendValue_raw);
+//            Disp.anyTypeThenLine(trendPeriod_raw + " | " + trendValue_raw);
             trends.put(trendPeriod_raw, trendValue_raw);
         }
         return trends;

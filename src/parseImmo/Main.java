@@ -29,22 +29,10 @@ public class Main {
     // urls
     private static final String url_main = "https://www.meilleursagents.com" ;
     private static final String url_sub = "/prix-immobilier" ;
-    // folder names
-    private static final String save_folder = "data_saved/";
-    private static final String output_folder = "data_output/";
-    // paths
-    private static final String root_path = "/Users/c/Documents/Saved Data/";
-    private static final String save_path = root_path + projectName + "/" + save_folder;
-    private static final String output_path = root_path + projectName + "/" + output_folder;
-    // extensions
-    public static final String extension_save = ".immo";
-    public static final String extension_csv = ".csv";
-    // filenames
-    public static final String filename_cities_urls = "urls";
-    public static final String filename_cities_list = "cities";
-    public static final String filename_vpn_state = "regions";
-
     // program parameters
+    // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
+//    public static boolean skipVpnInit = true; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
+    public static boolean shortcutMode = true; // scrapes only 20 first cities and then saves immediately
     public static String[] filterDepartments = {
             // IDF
             "75", // Paris
@@ -52,10 +40,22 @@ public class Main {
             "77", "78", "91", "95", // grande couronne
 //            "60", // Oise : Creil & co
     };
-    public static String csvSeparator = ";"; // because dots are replaced by commas
-    // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
-    public static boolean skipVpnInit = true; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
-    public static boolean shortcutMode = false; // scrapes only 20 first cities and then saves immediately
+    // folder names
+    private static final String save_folder = "data_saved/";
+    private static final String output_folder = "data_output/";
+    // paths
+    private static final String root_path = "/Users/c/Documents/Saved Data/";
+    private static final String save_path = root_path + projectName + "/" + save_folder;
+    private static final String output_path = root_path + projectName + "/" + output_folder;
+    // filenames
+    public static final String filename_cities_urls = "urls";
+    public static final String filename_cities_list = "cities";
+    public static final String filename_vpn_state = "regions";
+    // extensions
+    public static final String extension_save = ".immo";
+    public static final String extension_csv = ".csv";
+    // output
+    public static final String csvSeparator = ";"; // because dots are replaced by commas
 
 
     public static void main_(String[] args) throws Exception
@@ -73,9 +73,13 @@ public class Main {
         Disp.shortMsgLine(projectName, false);
         double start = System.currentTimeMillis(); // start counter
 
+        // check if the save folders exist
         ReadWriteFile.createFolderIfNotExists(save_path);
         ReadWriteFile.createFolderIfNotExists(output_path);
         SaveManager.setSavePath(save_path);
+
+        // make sure PIA is connected
+        if (! PIA.isConnected()) PIA.changeIP();
 
         // restart infinitely until everything is scraped
 //        try {
@@ -266,17 +270,20 @@ public class Main {
                 List<String> headers = new ArrayList<>();
                 String[] basicHeaders = {
                         // main infos
-                        "URL",
                         City.label_dptNumber,
+                        "URL",
                         City.label_name,
                         // prices
                         Prices.label_pricesMeanBuyFlat,
                         Prices.label_pricesMeanRentFlat,
                         Prices.label_pricesMeanBuyHouse,
                         // trends
+                        Prices.label_pricesTrends1m,
+                        Prices.label_pricesTrends3m,
                         Prices.label_pricesTrends1y,
                         Prices.label_pricesTrends2y,
                         Prices.label_pricesTrends5y,
+                        Prices.label_pricesTrends10y,
                 };
                 String[] localInfosHeaders = {
                         // population
@@ -321,7 +328,7 @@ public class Main {
                 String cityUrl = city.getUrl();
                 String cityName = city.getName();
                 String cityDpt = city.getPostalCodeAsDptNumber();
-                String[] basicAttrs = { cityUrl, cityDpt, cityName };
+                String[] basicAttrs = { cityDpt, cityUrl, cityName };
 
                 // define clean process methods
                 // 1) just remove text (numbers are already integers)
@@ -343,10 +350,13 @@ public class Main {
                 String pricesMeanBuyHouse = Misc.clean(city.getMeanPrice(false, false), cleanAmount); // NOTE: we'll just ignore houses for now and limit ourselves to apartments
                 String[] pricesAttrs = { pricesMeanBuyAppt, pricesMeanRentAppt, pricesMeanBuyHouse, };
                 // II.B.b. prices trends for last years
+                String pricesTrends1m = Misc.clean(city.getTrends(0, 1), cleanAmount);
+                String pricesTrends3m = Misc.clean(city.getTrends(0, 3), cleanAmount);
                 String pricesTrends1y = Misc.clean(city.getTrends(1), cleanAmount);
                 String pricesTrends2y = Misc.clean(city.getTrends(2), cleanAmount);
                 String pricesTrends5y = Misc.clean(city.getTrends(5), cleanAmount);
-                String[] trendsAttrs = { pricesTrends1y, pricesTrends2y, pricesTrends5y };
+                String pricesTrends10y = Misc.clean(city.getTrends(10), cleanAmount);
+                String[] trendsAttrs = { pricesTrends1m, pricesTrends3m, pricesTrends1y, pricesTrends2y, pricesTrends5y, pricesTrends10y };
 
                 // II.C. local infos
                 // II.C.b. homes
