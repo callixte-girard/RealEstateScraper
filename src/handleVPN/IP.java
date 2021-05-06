@@ -19,8 +19,6 @@ public class IP implements Serializable {
 //    public static final String NO_DATE = "°";
 
     private String address;
-//    private int timesUsed = 0;
-    private boolean blocked = false;
     private LocalDateTime lastTry;
 
     public IP(String address) {
@@ -31,7 +29,7 @@ public class IP implements Serializable {
     @Override
     public String toString() {
         String out = this.getAddress();
-        if (this.blocked) {
+        if (this.isBlocked()) {
             String lastTry_raw = this.getLastTry().format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss"));
             out += " *** BLOCKED *** on " + lastTry_raw;
         } else {
@@ -40,39 +38,19 @@ public class IP implements Serializable {
         return out;
     }
 
-
     public String getAddress() {
         return address;
     }
-
-//    public int getTimesUsed() {
-//        return timesUsed;
-//    }
-
-//    public void setTimesUsed(int timesUsed) {
-//        this.timesUsed = timesUsed;
-//    }
-
     public LocalDateTime getLastTry() {
         return lastTry;
     }
-
     public void setLastTry(LocalDateTime lastTry) {
         this.lastTry = lastTry;
     }
 
-//    public boolean isBlocked() {
-//        return this.timesUsed > nb_max_each_ip;
-//    }
-
     public boolean isBlocked() {
-        return blocked;
+        return this.lastTry.plusHours(24).isAfter(LocalDateTime.now());
     }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
-
 
     ////////////////////////// STATIC //////////////////////////
 
@@ -81,7 +59,6 @@ public class IP implements Serializable {
         Disp.anyType(">>> Handling IP change on same region...");
         // 1) increment current ip counter
 //        getCurrent().setTimesUsed(getCurrent().getTimesUsed() + 1);
-        getCurrent().setBlocked(true);
         getCurrent().setLastTry(LocalDateTime.now());
         // 2) on/off : gives a new ip
         IP oldIP = getCurrent();
