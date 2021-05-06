@@ -11,7 +11,11 @@ import parseDepartment.Department;
 import parseDepartment.ParseDepartment;
 import handleVPN.*;
 
+import javax.net.ssl.SSLHandshakeException;
+import javax.sql.ConnectionEvent;
 import java.io.*;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,15 +64,6 @@ public class Main {
         test = test.replace(".","o");
         Disp.anyType(test);
         // test passed ! .replace(String target) replace ALL occurences.
-
-//        HandleVPN.initAllRegions();
-        // check if VPN is connected or not.
-
-        // if not, connect it.
-        ////////
-        // else, get region and ip is it connected to.
-//        HandleVPN.displayCurrentRegionAndIP();
-//        HandleVPN.displayGlobalState();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -82,11 +77,6 @@ public class Main {
         ReadWriteFile.createFolderIfNotExists(output_path);
         SaveManager.setSavePath(save_path);
 
-        if (!skipVpnInit) {
-            HandleVPN.initAllRegions();
-            HandleVPN.displayCurrentRegionAndIP();
-        }
-
         // restart infinitely until everything is scraped
 //        try {
             ArrayList<City> allCities = scrapeAllFrenchCities();
@@ -98,22 +88,13 @@ public class Main {
 //            Disp.exc(e.getCause() + " | " + e.getMessage());
             e1.printStackTrace();
             Disp.star();
-
-            // now let's start again and again and again ... FOREVAH ;)
-            *//*try {
-//                main(args);
-            } catch (Exception | UncheckedIOException e2) {
-//                main(args);
-
-                Disp.exc("Exception level 2 : [ " + e2 + " ]");
-//                Disp.exc(e1.getCause() + " | " + e1.getMessage());
-                e2.printStackTrace();
-                Disp.star();
-            }*//*
         }*/
 
         double end = System.currentTimeMillis(); // end counter
-        System.out.println("Total time : " + (end-start) + " ms");
+        Disp.anyType("Total execution time : " +
+                (end-start)/1000 + " s = " +
+                (end-start) + " ms"
+        );
     }
 
 
@@ -124,40 +105,35 @@ public class Main {
 
         // 1. get cities urls from disk or from the net
         ArrayList<String> urls_cities;
-        Disp.anyTypeThenLine(">>> Getting all cities urls from saved content.");
+        Disp.anyTypeThenLine(">>> Attempting to get all cities urls from saved content.");
 
         // load list cities urls
         urls_cities = (ArrayList<String>) SaveManager.objectLoad
                 (filename_cities_urls + extension_save , true);
 
-        if (urls_cities == null) { // which means : if save file does not exist
+        if (urls_cities == null)
+        { // which means : if save file does not exist
             Disp.anyTypeThenStar(">>> Now scraping all cities urls from all departments.");
 
             // get urls of all 96 departments
-//            try {
-                Document main_page = ParseHtml.fetchHtmlAsDocumentFromUrl(url_main + url_sub);
-                Disp.anyType(url_main + url_sub);
-                ArrayList<String> urls_dpts = ParseDepartment.getUrls(main_page);
+            Document main_page = ParseHtml.fetchHtmlAsDocumentFromUrl(url_main + url_sub);
+            Disp.anyType(url_main + url_sub);
+            ArrayList<String> urls_dpts = ParseDepartment.getUrls(main_page);
 
-                // add all cities urls for each dpt in main list
-                urls_cities = new ArrayList<>();
-                for (String url_dpt : urls_dpts) {
-                    // filter by department number
-                    if (Arrays.asList(filterDepartments).isEmpty() ||
-                            Arrays.asList(filterDepartments).contains(ParseDepartment.getDptNumberFromUrl(url_dpt))
-                    ) {
-                        String url_to_parse = url_main + url_dpt; // assemble partial url with main part
-                        Department dpt = ParseDepartment.parseCities(url_to_parse);
+            // add all cities urls for each dpt in main list
+            urls_cities = new ArrayList<>();
+            for (String url_dpt : urls_dpts) {
+                // filter by department number
+                if (Arrays.asList(filterDepartments).isEmpty() ||
+                        Arrays.asList(filterDepartments).contains(ParseDepartment.getDptNumberFromUrl(url_dpt))
+                ) {
+                    String url_to_parse = url_main + url_dpt; // assemble partial url with main part
+                    Department dpt = ParseDepartment.parseCities(url_to_parse);
 
-                        urls_cities.addAll(dpt.getUrlsCities());
-//                    Disp.anyTypeThenStar(dpt.getUrlsCities().size()); // just to check we never get null
-                    }
+                    urls_cities.addAll(dpt.getUrlsCities());
+                    Disp.anyTypeThenStar(-dpt.getUrlsCities().size()); // just to check we never get null
                 }
-//            } catch (Exception e) {
-//                Disp.exc("Can't download departments list containing urls to cities... Program can't start.");
-//                e.printStackTrace();
-//            }
-
+            }
             // now write it to a file so we can recover it later
             SaveManager.objectSave(filename_cities_urls + extension_save , urls_cities);
         }
@@ -165,14 +141,13 @@ public class Main {
         // 2. parse cities from disk or from the net
         // parse main city list from urls
         ArrayList<City> cities;
-        Disp.anyTypeThenLine(">>> Getting all cities from saved content.");
-
+        Disp.anyTypeThenLine(">>> Attempting to get all cities from saved content.");
         // load list cities for doing only the ones that haven't been already done
         cities = (ArrayList<City>) SaveManager.objectLoad
                 (filename_cities_list + extension_save , true);
 
-        if (cities != null)  // which means : if save file exists
-        {
+        if (cities != null)
+        { // which means : if save file exists
             int actual_progress = cities.size();
             int total_cities = urls_cities.size();
             int remaining_cities = total_cities - actual_progress;
@@ -183,21 +158,29 @@ public class Main {
             cities = new ArrayList<>();
             Disp.anyType(">>> Now scraping all cities from all departments.");
         }
-
         Disp.htag(); Disp.htag(); Disp.htag();
-        int nbRetries_thisSess = 0;
+
+        parseRemainingCities(urls_cities, cities);
+        return cities;
+    }
+
+    //////////////////////////////////////////////////////////
+
+
+    private static void parseRemainingCities(List<String> urls_cities, List<City> cities)
+            throws Exception
+    {
+        int nbRetries = 0;
         int nbDone = 0;
-//        int nbIPChanges = 0;
+        int nbIPChanges = 0;
         boolean needsSave = false;
 
-        // the loop ;)
         for (int index_city = 0 ; index_city < urls_cities.size() ; index_city ++)
         {
             String url_city = urls_cities.get(index_city);
             String url_to_parse = url_main + url_city; // assemble partial url with main part
 
             if ( !City.exists(url_to_parse, cities) ) { // try to download it until it's done.
-
                 try {
                     City city = ParseCity.parse(url_to_parse);
 //                    Disp.anyType(city);
@@ -209,96 +192,65 @@ public class Main {
                     cities.add(city);
 
                     // success : resets try counter and increments done counter
-                    nbRetries_thisSess = 0;
-                    nbDone++;
+                    nbRetries = 0;
+                    nbDone ++;
                     // puts the trigger on after a city has been scraped since last save
                     needsSave = true;
 
                     // then, display progress for cities BUT ONLY IF IT HAS NOT BEEN ALREADY PARSED
                     Disp.progress("Scraped cities", nbDone, urls_cities.size());
 
-                } catch (Exception | UncheckedIOException e) {
-                    // here is da list of Exceptions that happened :
-                    /*
-                    - ArrayIndexOutOfBoundsException
-                    - SocketTimeoutException
-                    - SSLHandshakeException
-                    - ConnectionException
-                    - ConnectException
-                    - UncheckedIOException
-                    */
+                } catch (ArrayIndexOutOfBoundsException | SocketTimeoutException |
+                        SSLHandshakeException | ConnectException | UncheckedIOException e) {
 
                     // failure : increments try counter
-                    nbRetries_thisSess ++;
-
-                    // disp err msg
-                    Disp.exc("Quota maximum reached for [" + IP.getCurrent().getAddress() + "] -- Let's try again with another one ;)");
-//                    Disp.progress("consecutive max retries for " + IP.getCurrent().getAddress(), nbRetries_thisSess, Region.getCurrent().getGlobalSaturationIndicator());
-//                    Disp.exc(e.getCause() + " | " + e.getMessage());
-//                    e.printStackTrace();
+                    nbRetries ++;
+                    Disp.exc("Quota maximum reached for [" + PIA.getCurrentRegion() + " | " + PIA.getCurrentIP() + "] -- Let's try again with another one ;)");
+//                    Disp.exc(e.getCause() + " | " + e.getMessage());
 
                     // save actual progress only first time, only if changes have been made
-                    if (nbRetries_thisSess == 1)
-                    {
-                        // mark current IP as used & update last try date
-//                        IP.getCurrent().setTimesUsed(IP.getCurrent().getTimesUsed() + 1);
-                        IP.getCurrent().setBlocked(true);
-                        IP.getCurrent().setLastTry(LocalDateTime.now());
-                        SaveManager.objectSave(filename_vpn_state + extension_save, Region.getRegions());
+                    if (nbRetries == 1) {
+//                        SaveManager.objectSave(filename_vpn_state + extension_save, Region.getRegions());
 
-                        if (needsSave)
-                        {
-                            Disp.star();
+                        if (needsSave) {
+//                            Disp.star();
                             SaveManager.objectSave(filename_cities_list + extension_save, cities);
                             needsSave = false; // puts the trigger off until a new city gets scraped
-//                        nbIPChanges ++; // increment for further count
                         }
                     }
 
-
-                    // change IP as much as possible...
-                    if (! Region.getCurrent().isSaturated(true)) {
+                    // change IP if needed...
+//                    if (! Region.getCurrent().isSaturated(true)) {
+                    if (! PIA.isCurrentRegionSaturated()) {
                         // first try to fix the problem by changing IP in the same region.
-                        IP.handleChange(); // includes marking the IP as saturated and try again until it's good
-                    // ...when limit reached go to next region
+                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
+                        nbIPChanges ++;
+                        // ...when limit reached go to next region
                     } else {
                         // then try to switch to the next region
-                        Region.handleChange();
-                        // resets counters : not useful anymore
-                        nbRetries_thisSess = 0;
-//                        nbIPChanges = 0;
+                        PIA.changeRegion(); // includes marking the region as saturated
+                        nbIPChanges = 0;
                     }
                     // show current VPN state
-                    HandleVPN.displayCurrentRegionAndIP();
-//                    HandleVPN.displayGlobalState();
+                    PIA.displayCurrentRegionAndIP();
 
                     index_city--; // stay on that level. Must be parsed
                 }
-
-//                Disp.separatorStar();
-//                Disp.separatorLine();
                 Disp.line();
 
             } else {
-                // success : resets try counter and increment done counter
-                nbRetries_thisSess = 0;
-                nbDone++;
+                // city already exists : resets try counter and increment done counter
+                nbRetries = 0;
+                nbDone ++;
             }
 
             if (shortcutMode && index_city > 20) break;
-
         } // end of main for loop
 
         // save actual progress when download has finished too.
-//        if (cities.size() == urls_cities.size() - 2)
         if (needsSave)
             SaveManager.objectSave(filename_cities_list + extension_save, cities);
-
-        return cities;
     }
-
-    //////////////////////////////////////////////////////////
-
 
 
     private static void writeCitiesAsCSV(String filename, ArrayList<City> citiesToWrite, boolean with_headers)

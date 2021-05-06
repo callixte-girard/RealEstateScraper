@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import static myJavaClasses.Misc.clean;
 
@@ -18,8 +19,8 @@ public class City implements Serializable {
 
 //    private Document doc;
     private String url, name, postalCode;
-//    private Prices pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
-    private String pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
+    private Prices pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
+//    private String pricesBuyAppt, pricesBuyHouse, pricesRentAppt, pricesRentHouse;
 
     private LinkedHashMap<String, String> trends, allLocalInfos, localPop, localHomes, localRevenueEmpl;
 
@@ -29,14 +30,14 @@ public class City implements Serializable {
             String url,
             String name,
             String postalCode,
-//            Prices pricesBuyAppt,
-//            Prices pricesBuyHouse,
-//            Prices pricesRentAppt,
-//            Prices pricesRentHouse,
-            String pricesBuyAppt,
-            String pricesBuyHouse,
-            String pricesRentAppt,
-            String pricesRentHouse,
+            Prices pricesBuyAppt,
+            Prices pricesBuyHouse,
+            Prices pricesRentAppt,
+            Prices pricesRentHouse,
+//            String pricesBuyAppt,
+//            String pricesBuyHouse,
+//            String pricesRentAppt,
+//            String pricesRentHouse,
             LinkedHashMap<String, String> trends,
             LinkedHashMap<String, String> allLocalInfos,
             LinkedHashMap<String, String> localPop,
@@ -76,7 +77,7 @@ public class City implements Serializable {
                 "   localRevenueEmpl=" + localRevenueEmpl;
     }
 
-    public static boolean exists(String url, ArrayList<City> cities) {
+    public static boolean exists(String url, List<City> cities) {
 //        if (cities != null) {
             for (City city : cities) {
                 String url_city = city.getUrl();
@@ -88,67 +89,22 @@ public class City implements Serializable {
 //        }
     }
 
-    /*// display
-        @Override
-        public String toString() {
-            String[] arr = {
-                    // main attributes
-    //                this.getUrl(),
-    //                this.getName(),
-    //                this.getPostalCode(),
-                    // prices
-                    String.valueOf(this.getPricesBuyAppt()),
-                    String.valueOf(this.getPricesBuyHouse()),
-                    String.valueOf(this.getPricesRentAppt()),
-                    String.valueOf(this.getPricesRentHouse()),
-                    // trends
-                    String.valueOf(Misc.jsonifyArrayIntoString("TRENDS",
-                            Misc.jsonifyLinkedHashMapIntoStringArray(this.getTrends()),
-                            true
-                    )),
-                    // all the local infos
-                    *//* String.valueOf(Misc.jsonifyArrayIntoString("ALL_LOCAL_INFOS",
-                         Misc.jsonifyLinkedHashMapIntoStringArray(this.getAllLocalInfos()),
-                         true
-                 )),*//*
-                // population
-                String.valueOf(Misc.jsonifyArrayIntoString("POPULATION",
-                        Misc.jsonifyLinkedHashMapIntoStringArray(this.localPop),
-                        true
-                )),
-                // homes (logements)
-                String.valueOf(Misc.jsonifyArrayIntoString("HOMES",
-                        Misc.jsonifyLinkedHashMapIntoStringArray(this.localHomes),
-                        true
-                )),
-                // revenue / employment
-                String.valueOf(Misc.jsonifyArrayIntoString("REVENUE_EMPLOYMENT",
-                        Misc.jsonifyLinkedHashMapIntoStringArray(this.localRevenueEmpl),
-                        true
-                ))
-        };
-
-        String node_name = this.getName() + " (" + this.getPostalCode() + ")";
-        return Misc.jsonifyArrayIntoString(node_name, arr, true);
-    }
-*/
-
     public String getUrl() {
         return url;
     }
     public String getName() {
         return name;
     }
-    public String getPricesBuyAppt() {
+    public Prices getPricesBuyAppt() {
         return pricesBuyAppt;
     }
-    public String getPricesBuyHouse() {
+    public Prices getPricesBuyHouse() {
         return pricesBuyHouse;
     }
-    public String getPricesRentAppt() {
+    public Prices getPricesRentAppt() {
         return pricesRentAppt;
     }
-    public String getPricesRentHouse() {
+    public Prices getPricesRentHouse() {
         return pricesRentHouse;
     }
     public LinkedHashMap<String, String> getLocalPop() {

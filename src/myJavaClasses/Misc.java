@@ -20,6 +20,17 @@ public class Misc {
     public static final String NO_DATA = "Inconnu";
 
 
+    public static String clean(Object value) {
+//        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
+        String valueStr = "";
+        try {
+            valueStr = clean(value.toString());
+        } catch (NullPointerException e) {
+            valueStr = Misc.NO_DATA;
+        }
+        return valueStr;
+    }
+
     public static String clean(String value) {
 //        Disp.anyType("test : ");Disp.anyTypeThenLine(value);
         try {

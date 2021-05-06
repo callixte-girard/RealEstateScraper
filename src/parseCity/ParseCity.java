@@ -30,8 +30,8 @@ public class ParseCity {
         postalCode = spl[1];
 
         // >>> buy
-//        Prices pricesBuyAppt, pricesBuyHouse;
-        String pricesBuyAppt, pricesBuyHouse;
+        Prices pricesBuyAppt, pricesBuyHouse;
+//        String pricesBuyAppt, pricesBuyHouse;
         try {
             pricesBuyAppt = ExtractPrices.extr(doc, false, true);
         } catch (NullPointerException e) { pricesBuyAppt = null; }
@@ -40,8 +40,8 @@ public class ParseCity {
         } catch (NullPointerException e) { pricesBuyHouse = null; }
 
         // >>> rent
-//        Prices pricesRentAppt, pricesRentHouse;
-        String pricesRentAppt, pricesRentHouse;
+        Prices pricesRentAppt, pricesRentHouse;
+//        String pricesRentAppt, pricesRentHouse;
         try {
             pricesRentAppt = ExtractPrices.extr(doc, true, true);
         } catch (NullPointerException e) { pricesRentAppt = null; }

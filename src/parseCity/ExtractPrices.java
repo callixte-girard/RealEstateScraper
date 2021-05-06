@@ -6,7 +6,7 @@ import org.jsoup.nodes.Element;
 
 public class ExtractPrices {
 
-    public static String extr(Document doc, boolean rent, boolean appt)
+    public static Prices/*String*/ extr(Document doc, boolean rent, boolean appt)
     {
         // first determine if it's prices for rent or for buy
         Element mainPriceContainer, priceRangeContainer;
@@ -43,7 +43,7 @@ public class ExtractPrices {
                 meanPrice_raw.substring(0, meanPrice_raw.indexOf("€"))
         );
 //        Disp.anyTypeThenLine(meanPrice_str);
-        double meanPrice = Double.parseDouble(meanPrice_str);
+        double meanPrice = Double.parseDouble(meanPrice_str.replace(",","."));
 
         // >>> price range for 95% items
         // delimiters to parseCities prices range
@@ -71,8 +71,8 @@ public class ExtractPrices {
         double lowestPrice = Double.parseDouble(lowestPrice_str);
         double highestPrice = Double.parseDouble(highestPrice_str);
 
-//        return new Prices(rent, appt, meanPrice, highestPrice, lowestPrice);
-        return meanPrice_str;
+        return new Prices(rent, appt, meanPrice, highestPrice, lowestPrice);
+//        return meanPrice_str;
     }
 
 }

@@ -9,14 +9,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Region implements Serializable {
-    // above which region is considered completely drained
-    private static final int nb_max_blocked_addresses = 4;
-    // ireland : 9
-    // belgium : 6
-    // luxembourg : 5
-    // spain : 4
-    // all others are above the smallest.
-
     private static ArrayList<Region> regions = new ArrayList<>();
 
     private String name;

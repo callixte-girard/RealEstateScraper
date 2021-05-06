@@ -26,22 +26,8 @@ public class Prices implements Serializable {
     private double highest;
     private double lowest;
 
-/*    @Override
-    public String toString() {
-        String[] arr = {
-                String.valueOf(this.getHighest()) + " €",
-                String.valueOf(this.getMean()) + " €",
-                String.valueOf(this.getLowest() + " €"),
-        };
-        String out = "";
-        // rent or buy ?
-        if (this.isRent()) out += jsonifyArrayIntoString("RENT", arr, true);
-        else out += jsonifyArrayIntoString("BUY", arr, true);
-        // other attribs
-        return out;
-    }*/
 
-    @Override
+/*    @Override
     public String toString() {
         String out = "Prices{";
         if (rent) out += "rent"; else out += "buy";
@@ -52,7 +38,13 @@ public class Prices implements Serializable {
                 ", highest=" + highest +
                 '}';
         return out;
+    }*/
+
+    @Override
+    public String toString() {
+        return this.getMeanAsAmount();
     }
+
 
     public Prices(boolean rent, boolean appt, double mean, double highest, double lowest) {
         this.rent = rent;
