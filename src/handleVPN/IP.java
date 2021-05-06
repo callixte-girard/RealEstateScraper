@@ -91,8 +91,10 @@ public class IP implements Serializable {
         // 3) save
         SaveManager.objectSave(Main.filename_vpn_state + Main.extension_save, Region.getRegions());
         // 4) if same, change again
-        if (newIP.getAddress().equals(oldIP.getAddress())) return handleChange();
-        else return newIP;
+//        if (newIP.getAddress().equals(oldIP.getAddress()))
+//            return handleChange();
+//        else
+            return newIP;
     }
 
     public static IP getCurrent()

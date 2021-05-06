@@ -13,18 +13,8 @@ public class SaveManager {
     }
 
 	
-	public static void setSavePath(String path)
-	{
+	public static void setSavePath(String path) {
 		root_path = path ;
-		
-		File file = new File(root_path);
-		
-		if (!file.exists())
-		{
-			file.mkdirs();
-			
-			Disp.anyType(">>> Folder [ " + path + " ] created successfully :)");
-		}
 	}
 
 

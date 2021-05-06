@@ -40,10 +40,12 @@ public class ReadWriteFile
     public static boolean createFolderIfNotExists(String pathToInspect)
     {
         File f = new File(pathToInspect);
-        if (f.exists() && f.isDirectory()) f.delete();
-        else if (! f.isFile()) f.mkdir();
-        // inspect before returning
-        return f.exists() && f.isDirectory();
+        if (! f.exists()) {
+            f.mkdirs();
+            Disp.anyType(">>> Folder [ " + pathToInspect + " ] created successfully :)");
+        }
+        boolean b = f.exists() && f.isDirectory();
+        return b;
     }
 
 

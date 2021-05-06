@@ -29,7 +29,7 @@ public class Main {
     private static final String save_folder = "data_saved/";
     private static final String output_folder = "data_output/";
     // paths
-    private static final String root_path = "/Users/c/Documents/Local Code/—Java/";
+    private static final String root_path = "/Users/c/Documents/Saved Data/";
     private static final String save_path = root_path + projectName + "/" + save_folder;
     private static final String output_path = root_path + projectName + "/" + output_folder;
     // extensions
@@ -50,7 +50,7 @@ public class Main {
     };
     public static String csvSeparator = ";"; // because dots are replaced by commas
     // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
-    public static boolean skipVpnInit = false; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
+    public static boolean skipVpnInit = true; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
     public static boolean shortcutMode = false; // scrapes only 20 first cities and then saves immediately
 
 
@@ -78,9 +78,9 @@ public class Main {
         Disp.shortMsgLine(projectName, false);
         double start = System.currentTimeMillis(); // start counter
 
-        SaveManager.setSavePath(save_path);
         ReadWriteFile.createFolderIfNotExists(save_path);
         ReadWriteFile.createFolderIfNotExists(output_path);
+        SaveManager.setSavePath(save_path);
 
         if (!skipVpnInit) {
             HandleVPN.initAllRegions();
@@ -88,19 +88,19 @@ public class Main {
         }
 
         // restart infinitely until everything is scraped
-        try {
+//        try {
             ArrayList<City> allCities = scrapeAllFrenchCities();
             // finally, write cities as .csv to be exported to Excel
             writeCitiesAsCSV(filename_cities_list + extension_csv , allCities , true);
 
-        } catch (Exception | UncheckedIOException e1) {
+        /*} catch (Exception | UncheckedIOException e1) {
             Disp.exc("Exception level 1 : [ v" + e1 + " ]");
 //            Disp.exc(e.getCause() + " | " + e.getMessage());
             e1.printStackTrace();
             Disp.star();
 
             // now let's start again and again and again ... FOREVAH ;)
-            /*try {
+            *//*try {
 //                main(args);
             } catch (Exception | UncheckedIOException e2) {
 //                main(args);
@@ -109,15 +109,15 @@ public class Main {
 //                Disp.exc(e1.getCause() + " | " + e1.getMessage());
                 e2.printStackTrace();
                 Disp.star();
-            }*/
-        }
+            }*//*
+        }*/
 
         double end = System.currentTimeMillis(); // end counter
         System.out.println("Total time : " + (end-start) + " ms");
     }
 
 
-    private static ArrayList<City> scrapeAllFrenchCities()
+    private static ArrayList<City> scrapeAllFrenchCities() throws Exception
     {
         // little fix for encoding problems
 //        EncodingCorrecter.refreshEncodingAtStartup("UTF-8");
@@ -134,8 +134,9 @@ public class Main {
             Disp.anyTypeThenStar(">>> Now scraping all cities urls from all departments.");
 
             // get urls of all 96 departments
-            try {
+//            try {
                 Document main_page = ParseHtml.fetchHtmlAsDocumentFromUrl(url_main + url_sub);
+                Disp.anyType(url_main + url_sub);
                 ArrayList<String> urls_dpts = ParseDepartment.getUrls(main_page);
 
                 // add all cities urls for each dpt in main list
@@ -152,9 +153,10 @@ public class Main {
 //                    Disp.anyTypeThenStar(dpt.getUrlsCities().size()); // just to check we never get null
                     }
                 }
-            } catch (Exception e) {
-                Disp.exc("Can't download departments list containing urls to cities... Program can't start.");
-            }
+//            } catch (Exception e) {
+//                Disp.exc("Can't download departments list containing urls to cities... Program can't start.");
+//                e.printStackTrace();
+//            }
 
             // now write it to a file so we can recover it later
             SaveManager.objectSave(filename_cities_urls + extension_save , urls_cities);

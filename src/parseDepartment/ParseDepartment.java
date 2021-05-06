@@ -14,8 +14,10 @@ public class ParseDepartment {
     public static ArrayList<String> getUrls(Document doc)
     {
         ArrayList<String> url_out = new ArrayList<>();
+        Disp.anyType(doc == null);
 
         Element dptsContainer = doc
+                .getElementById("departements")
                 .getElementById("subregion_price_table");
         Elements dpts = dptsContainer
                 .getElementsByTag("tbody").first()
