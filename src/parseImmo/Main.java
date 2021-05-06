@@ -12,13 +12,12 @@ import parseDepartment.ParseDepartment;
 import handleVPN.*;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.sql.ConnectionEvent;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static myJavaClasses.Misc.clean;
@@ -30,9 +29,14 @@ public class Main {
     private static final String url_main = "https://www.meilleursagents.com" ;
     private static final String url_sub = "/prix-immobilier" ;
     // program parameters
-    // NOTE: by default, those two parameters must be set to false (to scrape and export only after everything is finished)
-//    public static boolean skipVpnInit = true; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
-    public static boolean shortcutMode = true; // scrapes only 20 first cities and then saves immediately
+//    public static boolean skip_vpn_init = true; // says if VPN must be handled or just ignored (if only needs to export already scraped data, for example)
+    // help about bypassing server limitations
+    public static boolean shuffle_mode = false; // doesn't seem to change anything
+    public static int wait_delay = 0; // put to 0 to cancel additional delay
+    public static int change_ip_each = 10;
+    public static int short_mode_nb_cities = 20; // the number of cities from which it directly shortcuts to exporting data as csv
+//    public static int short_mode_nb_cities = 2000; // the number of cities from which it directly shortcuts to exporting data as csv
+
     public static String[] filterDepartments = {
             // IDF
             "75", // Paris
@@ -79,7 +83,7 @@ public class Main {
         SaveManager.setSavePath(save_path);
 
         // make sure PIA is connected
-        if (! PIA.isConnected()) PIA.changeIP();
+        if (! PIA.isConnected()) PIA.reconnect();
 
         // restart infinitely until everything is scraped
 //        try {
@@ -114,6 +118,8 @@ public class Main {
         // load list cities urls
         urls_cities = (ArrayList<String>) SaveManager.objectLoad
                 (filename_cities_urls + extension_save , true);
+        // randomise the urls
+        if (shuffle_mode) Collections.shuffle(urls_cities);
 
         if (urls_cities == null)
         { // which means : if save file does not exist
@@ -177,6 +183,7 @@ public class Main {
         int nbRetries = 0;
         int nbDone = 0;
         int nbIPChanges = 0;
+        int nbSameIP = 0;
         boolean needsSave = false;
 
         for (int index_city = 0 ; index_city < urls_cities.size() ; index_city ++)
@@ -186,6 +193,16 @@ public class Main {
 
             if ( !City.exists(url_to_parse, cities) ) { // try to download it until it's done.
                 try {
+                    nbSameIP ++;
+                    if (nbSameIP > change_ip_each) {
+                        nbSameIP = 0;
+                        PIA.changeRegion();
+//                        PIA.changeIP();
+                        SaveManager.objectSave(filename_cities_list + extension_save, cities);
+//                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedIPs());
+//                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedRegions());
+                    }
+
                     City city = ParseCity.parse(url_to_parse);
 //                    Disp.anyType(city);
                     Disp.anyType(
@@ -204,6 +221,9 @@ public class Main {
                     // then, display progress for cities BUT ONLY IF IT HAS NOT BEEN ALREADY PARSED
                     Disp.progress("Scraped cities", nbDone, urls_cities.size());
 
+                    // sleep a bit to slow pépère down
+                    if (wait_delay > 0) Thread.sleep(wait_delay);
+
                 } catch (ArrayIndexOutOfBoundsException | SocketTimeoutException |
                         SSLHandshakeException | ConnectException | UncheckedIOException e) {
 
@@ -213,7 +233,7 @@ public class Main {
 //                    Disp.exc(e.getCause() + " | " + e.getMessage());
 
                     // save actual progress only first time, only if changes have been made
-                    if (nbRetries == 1) {
+                    /*if (nbRetries == 1) {
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, Region.getRegions());
 
                         if (needsSave) {
@@ -221,18 +241,20 @@ public class Main {
                             SaveManager.objectSave(filename_cities_list + extension_save, cities);
                             needsSave = false; // puts the trigger off until a new city gets scraped
                         }
-                    }
+                    }*/
 
                     // change IP if needed...
 //                    if (! Region.getCurrent().isSaturated(true)) {
                     if (! PIA.isCurrentRegionSaturated()) {
                         // first try to fix the problem by changing IP in the same region.
-                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
+                        PIA.changeRegion(); // includes marking the IP as saturated and try again until it's good
+//                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
                         nbIPChanges ++;
                         // ...when limit reached go to next region
                     } else {
                         // then try to switch to the next region
                         PIA.changeRegion(); // includes marking the region as saturated
+//                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
                         nbIPChanges = 0;
                     }
                     // show current VPN state
@@ -248,7 +270,7 @@ public class Main {
                 nbDone ++;
             }
 
-            if (shortcutMode && index_city > 20) break;
+            if (index_city > short_mode_nb_cities) break;
         } // end of main for loop
 
         // save actual progress when download has finished too.

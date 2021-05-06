@@ -3,8 +3,9 @@ package handleVPN;
 import myJavaClasses.Disp;
 import myJavaClasses.ShellWrapper;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PIA
 {
@@ -22,15 +23,16 @@ public class PIA
     public static final String STATUS_CONNECTED = "Connected";
     public static final String STATUS_DISCONNECTED = "Disconnected";
 
-    private static int changeIPCounter = 0;
+    private static List<String> alreadyUsedIPs = new ArrayList<>();
+    private static List<String> alreadyUsedRegions = new ArrayList<>();
 
     private static String buildShellCommandGet(String type) { return "piactl get " + type; }
-    private static String buildShellCommandSet(String type) { return "piactl set " + type; }
+    private static String buildShellCommandSet(String type, String value) { return "piactl set " + type + " " + value; }
     private static String buildShellCommandMonitor(String type) { return "piactl monitor " + type; }
     private static String buildShellCommandConnect() { return "piactl connect"; }
     private static String buildShellCommandDisconnect() { return "piactl disconnect"; }
 
-    private static void reconnect() {
+    public static void reconnect() {
         String status = "";
         ShellWrapper.execute(buildShellCommandDisconnect());
         while (! status.equals(STATUS_DISCONNECTED)) { status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0); }
@@ -54,6 +56,13 @@ public class PIA
         return ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0).equals(STATUS_CONNECTED);
     }
 
+    public static List<String> getAlreadyUsedIPs() {
+        return alreadyUsedIPs;
+    }
+    public static List<String> getAlreadyUsedRegions() {
+        return alreadyUsedIPs;
+    }
+
     public static void displayCurrentRegionAndIP() {
         // get current region and ip
         Disp.shortMsgStar(
@@ -75,12 +84,12 @@ public class PIA
     public static String changeIP()
     {
         String oldIP = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
+        alreadyUsedIPs.add(oldIP);
         reconnect();
         String newIP = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
 
-        if (oldIP.equals(newIP)) {
-//            Disp.anyType("The obtained IP is the same as before : [ " + oldIP + " ]. Trying again...");
-            Disp.anyType("The obtained IP is the same as before. Trying again...");
+        if (alreadyUsedIPs.contains(newIP)) {
+            Disp.anyType("The obtained IP has already been used before. Trying another one...");
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);
@@ -94,10 +103,18 @@ public class PIA
     public static String changeRegion()
     {
         String oldRegion = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
-        //////
-        String newRegion = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
-        if (oldRegion.equals(newRegion)) return changeIP();
-        return newRegion;
+        alreadyUsedRegions.add(oldRegion);
+        List<String> allRegions = ShellWrapper.execute(buildShellCommandGet(TYPE_ALL_REGIONS));
+        int randomIndex = new Random().nextInt(allRegions.size());
+        String newRegion = allRegions.get(randomIndex);
+        ShellWrapper.execute(buildShellCommandSet(TYPE_CURRENT_REGION, newRegion));
+
+        if (alreadyUsedRegions.contains(newRegion)) {
+            Disp.anyType("The obtained region has already been used. Trying another one...");
+            return changeRegion();
+        } else {
+            return newRegion;
+        }
     }
 
 
