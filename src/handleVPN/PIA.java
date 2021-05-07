@@ -105,6 +105,8 @@ public class PIA
         if (alreadyUsedIPs.contains(newIP)) {
             Disp.anyType(">>> The obtained IP [ " + newIP + " ] has already been used before. Trying another one...");
             ipChangeCounter ++;
+//            Disp.exc("IpChangeCounter : " + ipChangeCounter);
+//            if (ipChangeCounter > maxNbIpChanges) changeRegion();
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);

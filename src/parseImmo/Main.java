@@ -243,11 +243,11 @@ public class Main {
                         } else {
                             // then try to switch to the next region
                             PIA.changeRegion(); // includes marking the region as saturated
-//                            PIA.changeIP(); // necessary ? seems to be better off deactivated : slower but works properly.
+                            PIA.changeIP(); // necessary ? seems to be better off deactivated : slower but works properly.
                             nbIPChanges = 0;
                         }
+//                        Disp.exc("nbIPChanges : " + nbIPChanges);
                         PIA.displayCurrentRegionAndIP();
-                        Disp.exc("nbIPChanges : " + nbIPChanges);
                         index_city --;
                     }
                     else
