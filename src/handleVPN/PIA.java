@@ -167,6 +167,8 @@ public class PIA
                 }
             }
         }
+
+        if (alreadyUsedRegions.contains(nextRegion)) nextRegion = getNextRegion(random);
         return nextRegion;
     }
 }
