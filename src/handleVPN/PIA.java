@@ -31,7 +31,7 @@ public class PIA
     public static final boolean chooseNextRegionRandomly = false;
     public static final boolean fullDebug = false;
 
-    public static int ipChangeCounter = 0;
+    private static int ipChangeCounter = 0;
     private static List<String> alreadyUsedIPs = new ArrayList<>();
     private static List<String> alreadyUsedRegions = new ArrayList<>();
 
