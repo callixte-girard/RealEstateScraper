@@ -115,7 +115,7 @@ public class Main {
 //            Disp.exc(e.getCause() + " | " + e.getMessage());
             e1.printStackTrace();
             Disp.star();
-            ShellWrapper.appleScriptBeep(2000);
+            ShellWrapper.appleScriptBeep();
         }
 
         double end = System.currentTimeMillis(); // end counter
@@ -330,7 +330,7 @@ public class Main {
             SaveManager.objectSave(filename_cities_list + extension_save, cities);
             writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
         }
-        ShellWrapper.appleScriptBeep(1500);
+        ShellWrapper.appleScriptBeep();
     }
 
 

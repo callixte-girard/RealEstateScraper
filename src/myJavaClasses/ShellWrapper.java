@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class ShellWrapper {
+    private static final int duration = 2500;
 
     public static ArrayList<String> execute(String command)
     {
@@ -35,7 +36,7 @@ public class ShellWrapper {
         try {
             Runtime runtime = Runtime.getRuntime();
             String[] args = { "osascript", "-e", command };
-            Process p = runtime.exec(command);
+            Process p = runtime.exec(args);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
@@ -54,7 +55,7 @@ public class ShellWrapper {
         }
     }
 
-    public static void appleScriptBeep(int duration)
+    public static void appleScriptBeep()
     {
         for (int i=0; i<5; i++) {
             ShellWrapper.appleScript("beep");

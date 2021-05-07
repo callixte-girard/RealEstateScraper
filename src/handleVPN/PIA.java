@@ -25,7 +25,8 @@ public class PIA
 
     public static final String NO_IP = "Unknown";
     public static final int maxNbIpChanges = 5;
-
+    public static final boolean limitIpChangesPerRegion = false;
+    public static final boolean fullDebug = false;
 
     public static int ipChangeCounter = 0;
     private static List<String> alreadyUsedIPs = new ArrayList<>();
@@ -33,7 +34,7 @@ public class PIA
 
     private static String buildShellCommandGet(String type) { return "piactl get " + type; }
     private static String buildShellCommandSet(String type, String value) { return "piactl set " + type + " " + value; }
-    private static String buildShellCommandMonitor(String type) { return "piactl monitor " + type; }
+//    private static String buildShellCommandMonitor(String type) { return "piactl monitor " + type; } // doesn't work as expected in Java, only in Shell
     private static String buildShellCommandConnect() { return "piactl connect"; }
     private static String buildShellCommandDisconnect() { return "piactl disconnect"; }
 
@@ -44,13 +45,13 @@ public class PIA
         ShellWrapper.execute(buildShellCommandDisconnect());
         while (! status.equals(STATUS_DISCONNECTED)) {
             status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0);
-//            Disp.anyType(status);
+            if (fullDebug) Disp.anyType(status);
         }
         ShellWrapper.execute(buildShellCommandConnect());
         while (! status.equals(STATUS_CONNECTED) || ip.equals(NO_IP)) {
             status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0);
             ip = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
-//            Disp.anyType(status);
+            if (fullDebug) Disp.anyType(status);
         }
     }
 
@@ -106,9 +107,10 @@ public class PIA
             Disp.anyType(">>> The obtained IP [ " + newIP + " ] has already been used before. Trying another one...");
             ipChangeCounter ++;
 //            Disp.exc("IpChangeCounter : " + ipChangeCounter);
-            if (ipChangeCounter >= maxNbIpChanges)
-                changeRegion();
-                ShellWrapper.appleScriptBeep(2000);
+            if (ipChangeCounter >= maxNbIpChanges) {
+                if (limitIpChangesPerRegion) changeRegion();
+                ShellWrapper.appleScriptBeep();
+            }
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);
