@@ -33,9 +33,11 @@ public class Main {
     // help about bypassing server limitations
     public static boolean shuffle_mode = false; // doesn't seem to change anything
     public static int wait_delay = 0; // put to 0 to cancel additional delay
-    public static int change_ip_each = 10;
-    public static int short_mode_nb_cities = 20; // the number of cities from which it directly shortcuts to exporting data as csv
-//    public static int short_mode_nb_cities = 2000; // the number of cities from which it directly shortcuts to exporting data as csv
+//    public static int change_ip_each = 2;
+    public static int change_ip_each = 25; // >25 does nothing more than inspections the program already does
+//    public static int short_mode_nb_cities = 20; // the number of cities from which it directly shortcuts to exporting data as csv
+//    public static int short_mode_nb_cities = 50; // the number of cities from which it directly shortcuts to exporting data as csv
+    public static int short_mode_nb_cities = 2000; // the number of cities from which it directly shortcuts to exporting data as csv
 
     public static String[] filterDepartments = {
             // IDF
@@ -62,17 +64,34 @@ public class Main {
     public static final String csvSeparator = ";"; // because dots are replaced by commas
 
 
-    public static void main_(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
+        main_(args);
+//        test1();
+//        test2();
+//        test3();
+    }
+
+    private static void test1() {
         String test = "...";
         test = test.replace(".","o");
         Disp.anyType(test);
         // test passed ! .replace(String target) replace ALL occurences.
     }
 
+    private static void test2() {
+        ArrayList<String> res = ShellWrapper.execute("piactl get connectionstate");
+        for (String s : res) { Disp.anyType(s); }
+    }
+
+    private static void test3() {
+        ArrayList<String> res = ShellWrapper.execute("piactl monitor connectionstate");
+        for (String s : res) { Disp.anyType(s); }
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws Exception
+    public static void main_(String[] args) throws Exception
     {
         Disp.shortMsgLine(projectName, false);
         double start = System.currentTimeMillis(); // start counter
@@ -141,7 +160,7 @@ public class Main {
                     Department dpt = ParseDepartment.parseCities(url_to_parse);
 
                     urls_cities.addAll(dpt.getUrlsCities());
-                    Disp.anyTypeThenStar(-dpt.getUrlsCities().size()); // just to check we never get null
+//                    Disp.anyTypeThenStar(dpt.getUrlsCities().size()); // just to check we never get null
                 }
             }
             // now write it to a file so we can recover it later
@@ -170,7 +189,9 @@ public class Main {
         }
         Disp.htag(); Disp.htag(); Disp.htag();
 
-        parseRemainingCities(urls_cities, cities);
+//        while (cities.size() < short_mode_nb_cities) {
+            parseRemainingCities(urls_cities, cities);
+//        }
         return cities;
     }
 
@@ -194,16 +215,27 @@ public class Main {
             if ( !City.exists(url_to_parse, cities) ) { // try to download it until it's done.
                 try {
                     nbSameIP ++;
-                    if (nbSameIP > change_ip_each) {
+                    if (nbSameIP >= change_ip_each) {
                         nbSameIP = 0;
-                        PIA.changeRegion();
-//                        PIA.changeIP();
+//                        PIA.changeRegion();
+                        PIA.changeIP();
+                        nbIPChanges ++;
                         SaveManager.objectSave(filename_cities_list + extension_save, cities);
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedIPs());
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedRegions());
                     }
 
                     City city = ParseCity.parse(url_to_parse);
+                    City city_comp = ParseCity.parse(url_to_parse);
+                    if (! city.getMeanPrice(false, true).equals(city_comp.getMeanPrice(false, true)))
+                    {
+                        Disp.exc("Difference between two requests : " + city.getMeanPrice(false, true) + " — " + city_comp.getMeanPrice(false, true));
+                        SaveManager.objectSave(filename_cities_list + extension_save, cities);
+//                        break;
+                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
+                        nbIPChanges ++;
+                    }
+
 //                    Disp.anyType(city);
                     Disp.anyType(
                             ">>> City n°" + (index_city+1) + " : [ "
@@ -233,7 +265,7 @@ public class Main {
 //                    Disp.exc(e.getCause() + " | " + e.getMessage());
 
                     // save actual progress only first time, only if changes have been made
-                    /*if (nbRetries == 1) {
+                    if (nbRetries == 1) {
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, Region.getRegions());
 
                         if (needsSave) {
@@ -241,20 +273,18 @@ public class Main {
                             SaveManager.objectSave(filename_cities_list + extension_save, cities);
                             needsSave = false; // puts the trigger off until a new city gets scraped
                         }
-                    }*/
+                    }
 
                     // change IP if needed...
 //                    if (! Region.getCurrent().isSaturated(true)) {
-                    if (! PIA.isCurrentRegionSaturated()) {
+                    if (! PIA.isCurrentRegionSaturated(nbIPChanges)) {
                         // first try to fix the problem by changing IP in the same region.
-                        PIA.changeRegion(); // includes marking the IP as saturated and try again until it's good
-//                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
+                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
                         nbIPChanges ++;
                         // ...when limit reached go to next region
                     } else {
                         // then try to switch to the next region
                         PIA.changeRegion(); // includes marking the region as saturated
-//                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
                         nbIPChanges = 0;
                     }
                     // show current VPN state
@@ -271,6 +301,10 @@ public class Main {
             }
 
             if (index_city > short_mode_nb_cities) break;
+
+            // finally, write cities as .csv to be exported to Excel
+//            writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
+
         } // end of main for loop
 
         // save actual progress when download has finished too.
@@ -279,10 +313,10 @@ public class Main {
     }
 
 
-    private static void writeCitiesAsCSV(String filename, ArrayList<City> citiesToWrite, boolean with_headers)
+    private static void writeCitiesAsCSV(String filename, List<City> citiesToWrite, boolean with_headers)
     {
         String save_to = output_path + filename ;
-        Disp.anyType("Full export path is : ", save_to);
+//        Disp.anyType("Full export path is : ", save_to);
 
         try {
             BufferedWriter bw = ReadWriteFile.outputWriter(save_to);

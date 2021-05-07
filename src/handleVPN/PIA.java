@@ -23,6 +23,10 @@ public class PIA
     public static final String STATUS_CONNECTED = "Connected";
     public static final String STATUS_DISCONNECTED = "Disconnected";
 
+    public static final String NO_IP = "Unknown";
+    public static final int maxNbIpChanges = 5;
+
+
     private static List<String> alreadyUsedIPs = new ArrayList<>();
     private static List<String> alreadyUsedRegions = new ArrayList<>();
 
@@ -32,12 +36,21 @@ public class PIA
     private static String buildShellCommandConnect() { return "piactl connect"; }
     private static String buildShellCommandDisconnect() { return "piactl disconnect"; }
 
+
     public static void reconnect() {
         String status = "";
+        String ip = NO_IP;
         ShellWrapper.execute(buildShellCommandDisconnect());
-        while (! status.equals(STATUS_DISCONNECTED)) { status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0); }
+        while (! status.equals(STATUS_DISCONNECTED)) {
+            status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0);
+//            Disp.anyType(status);
+        }
         ShellWrapper.execute(buildShellCommandConnect());
-        while (! status.equals(STATUS_CONNECTED)) { status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0); }
+        while (! status.equals(STATUS_CONNECTED) || ip.equals(NO_IP)) {
+            status = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_STATE)).get(0);
+            ip = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
+//            Disp.anyType(status);
+        }
     }
 
 //    private static List<Region> saturatedRegions = new ArrayList<>();
@@ -76,8 +89,8 @@ public class PIA
         return true;
     }
 
-    public static boolean isCurrentRegionSaturated() {
-        return false;
+    public static boolean isCurrentRegionSaturated(int nbIPChanges) {
+        return nbIPChanges > maxNbIpChanges;
     }
 
 
@@ -89,13 +102,13 @@ public class PIA
         String newIP = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_IP)).get(0);
 
         if (alreadyUsedIPs.contains(newIP)) {
-            Disp.anyType("The obtained IP has already been used before. Trying another one...");
+            Disp.anyType(">>> The obtained IP [ " + newIP + " ] has already been used before. Trying another one...");
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);
 //            Disp.anyType("IP change : [ " + newIP + " ] <— [ " + oldIP + " ]");
 //            Disp.anyType("IP change : [ " + oldIP + " ] —> [ " + newIP + " ]");
-            Disp.anyType("A new IP has been obtained :)");
+            Disp.anyType(">>> A new IP has been obtained : [ " + newIP + " ]");
             return newIP;
         }
     }
