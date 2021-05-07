@@ -27,6 +27,7 @@ public class PIA
     public static final int maxNbIpChanges = 5;
 
 
+    public static int ipChangeCounter = 0;
     private static List<String> alreadyUsedIPs = new ArrayList<>();
     private static List<String> alreadyUsedRegions = new ArrayList<>();
 
@@ -103,17 +104,19 @@ public class PIA
 
         if (alreadyUsedIPs.contains(newIP)) {
             Disp.anyType(">>> The obtained IP [ " + newIP + " ] has already been used before. Trying another one...");
+            ipChangeCounter ++;
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);
 //            Disp.anyType("IP change : [ " + newIP + " ] <— [ " + oldIP + " ]");
 //            Disp.anyType("IP change : [ " + oldIP + " ] —> [ " + newIP + " ]");
             Disp.anyType(">>> A new IP has been obtained : [ " + newIP + " ]");
+            ipChangeCounter = 0;
             return newIP;
         }
     }
 
-    public static String changeRegion()
+    public static String changeRegion() // this one takes a random int
     {
         String oldRegion = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
         alreadyUsedRegions.add(oldRegion);
@@ -123,12 +126,15 @@ public class PIA
         ShellWrapper.execute(buildShellCommandSet(TYPE_CURRENT_REGION, newRegion));
 
         if (alreadyUsedRegions.contains(newRegion)) {
-            Disp.anyType("The obtained region has already been used. Trying another one...");
+            Disp.anyType(">>> The obtained region has already been used. Trying another one...");
             return changeRegion();
         } else {
             return newRegion;
         }
     }
 
-
+    public static String changeRegion_() // this one takes the next int TODO
+    {
+        return null;
+    }
 }

@@ -235,9 +235,19 @@ public class Main {
                         SaveManager.objectSave(filename_cities_list + extension_save, cities);
                         writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
 
-                        PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
-                        nbIPChanges ++;
-//                        Disp.exc("nbIPChanges : " + nbIPChanges);
+                        if (! PIA.isCurrentRegionSaturated(nbIPChanges)) {
+                            // first try to fix the problem by changing IP in the same region.
+                            PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
+                            nbIPChanges ++;
+                            // ...when limit reached go to next region
+                        } else {
+                            // then try to switch to the next region
+                            PIA.changeRegion(); // includes marking the region as saturated
+//                            PIA.changeIP(); // necessary ? seems to be better off deactivated : slower but works properly.
+                            nbIPChanges = 0;
+                        }
+                        PIA.displayCurrentRegionAndIP();
+                        Disp.exc("nbIPChanges : " + nbIPChanges);
                         index_city --;
                     }
                     else
