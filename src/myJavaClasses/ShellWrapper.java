@@ -57,9 +57,9 @@ public class ShellWrapper {
 
     public static void appleScriptBeep()
     {
-        for (int i=0; i<5; i++) {
+        /*for (int i=0; i<5; i++) {
             ShellWrapper.appleScript("beep");
             ShellWrapper.appleScript("delay " + duration);
-        }
+        }*/
     }
 }

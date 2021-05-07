@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+
+// Everything is done here now. Every other classes in this package handleVPN are obsolete.
 public class PIA
 {
     /*enum TYPES {
@@ -25,7 +27,8 @@ public class PIA
 
     public static final String NO_IP = "Unknown";
     public static final int maxNbIpChanges = 5;
-    public static final boolean limitIpChangesPerRegion = false;
+    public static final boolean limitIpChangesPerRegion = true;
+    public static final boolean chooseNextRegionRandomly = false;
     public static final boolean fullDebug = false;
 
     public static int ipChangeCounter = 0;
@@ -128,9 +131,7 @@ public class PIA
 
         String oldRegion = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
         alreadyUsedRegions.add(oldRegion);
-        List<String> allRegions = ShellWrapper.execute(buildShellCommandGet(TYPE_ALL_REGIONS));
-        int randomIndex = new Random().nextInt(allRegions.size());
-        String newRegion = allRegions.get(randomIndex);
+        String newRegion = getNextRegion(chooseNextRegionRandomly);
         ShellWrapper.execute(buildShellCommandSet(TYPE_CURRENT_REGION, newRegion));
 
         if (alreadyUsedRegions.contains(newRegion)) {
@@ -141,8 +142,31 @@ public class PIA
         }
     }
 
-    public static String changeRegion_() // this one takes the next int TODO
+    private static String getNextRegion(boolean random)
     {
-        return null;
+        List<String> allRegions = ShellWrapper.execute(buildShellCommandGet(TYPE_ALL_REGIONS));
+        String nextRegion = getCurrentRegion();
+
+        if (random) {
+            int randomIndex = -1;
+            Random r = new Random();
+            while (randomIndex <= 1) {
+                randomIndex = r.nextInt(allRegions.size());
+            }
+            nextRegion = allRegions.get(randomIndex);
+
+        } else {
+            for (int i=1; i<allRegions.size(); i++) { // avoid i=0 because it's auto mode
+                String region = allRegions.get(i);
+                if (region.equals(getCurrentRegion())) {
+                    if (i == allRegions.size()-1)
+                        nextRegion = allRegions.get(1);
+                    else
+                        nextRegion = allRegions.get(i+1);
+                    break;
+                }
+            }
+        }
+        return nextRegion;
     }
 }
