@@ -33,11 +33,11 @@ public class Main {
     // help about bypassing server limitations
     public static boolean shuffle_mode = false; // doesn't seem to change anything
     public static int wait_delay = 0; // put to 0 to cancel additional delay
-//    public static int change_ip_each = 2;
-    public static int change_ip_each = 25; // >25 does nothing more than inspections the program already does
-//    public static int short_mode_nb_cities = 20; // the number of cities from which it directly shortcuts to exporting data as csv
-//    public static int short_mode_nb_cities = 50; // the number of cities from which it directly shortcuts to exporting data as csv
-    public static int short_mode_nb_cities = 2000; // the number of cities from which it directly shortcuts to exporting data as csv
+//    public static int short_mode_nb_cities = 20;
+//    public static int short_mode_nb_cities = 50;
+    public static int short_mode_nb_cities = 2000;
+    //    public static int change_ip_each = 2;
+    public static int change_ip_each = short_mode_nb_cities;
 
     public static String[] filterDepartments = {
             // IDF
@@ -105,23 +105,21 @@ public class Main {
         if (! PIA.isConnected()) PIA.reconnect();
 
         // restart infinitely until everything is scraped
-//        try {
+        try {
             ArrayList<City> allCities = scrapeAllFrenchCities();
             // finally, write cities as .csv to be exported to Excel
             writeCitiesAsCSV(filename_cities_list + extension_csv , allCities , true);
 
-        /*} catch (Exception | UncheckedIOException e1) {
+        } catch (Exception | UncheckedIOException e1) {
             Disp.exc("Exception level 1 : [ v" + e1 + " ]");
 //            Disp.exc(e.getCause() + " | " + e.getMessage());
             e1.printStackTrace();
             Disp.star();
-        }*/
+            ShellWrapper.appleScriptBeep(2000);
+        }
 
         double end = System.currentTimeMillis(); // end counter
-        Disp.anyType("Total execution time : " +
-                (end-start)/1000 + " s = " +
-                (end-start) + " ms"
-        );
+        Disp.duration("program", end, start);
     }
 
 
@@ -254,9 +252,9 @@ public class Main {
                     {
 //                        Disp.anyType(city);
                         Disp.anyType(
-                                ">>> City n°" + (index_city+1) + " : [ "
-                                        + city.getName() + " ("
-                                        + city.getPostalCodeAsDptNumber() + ") ] ——> done."
+                        ">>> City n°" + (index_city+1) + " : [ "
+                                + city.getName() + " ("
+                                + city.getPostalCodeAsDptNumber() + ") ] ——> done."
                         );
                         cities.add(city);
 
@@ -332,6 +330,7 @@ public class Main {
             SaveManager.objectSave(filename_cities_list + extension_save, cities);
             writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
         }
+        ShellWrapper.appleScriptBeep(1500);
     }
 
 

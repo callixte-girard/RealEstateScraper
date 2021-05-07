@@ -64,6 +64,15 @@ public class Disp {
 		anyType(">>> " + label + " : " + nb_actuel + " / " + nb_total + " | " + percentDisp + " %");
 	}
 
+	public static void duration(String label, double end, double start) {
+		Disp.anyType("Total execution time for [ " + label + " ] : " +
+//                (end-start)/3600000 + " h = " +
+				(end-start)/60000 + " min = " +
+				(end-start)/1000 + " s = " +
+				(end-start) + " ms"
+		);
+	}
+
 	public static void shortMsgStar(String msg, boolean wrapped) {
 		String wrapper = generateWrapperFromMsg(msg, '*');
 		if (wrapped) star();

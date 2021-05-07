@@ -106,7 +106,9 @@ public class PIA
             Disp.anyType(">>> The obtained IP [ " + newIP + " ] has already been used before. Trying another one...");
             ipChangeCounter ++;
 //            Disp.exc("IpChangeCounter : " + ipChangeCounter);
-//            if (ipChangeCounter > maxNbIpChanges) changeRegion();
+            if (ipChangeCounter >= maxNbIpChanges)
+                changeRegion();
+                ShellWrapper.appleScriptBeep(2000);
             return changeIP();
         } else {
 //            Disp.anyType("Old IP : " + oldIP);
@@ -120,6 +122,8 @@ public class PIA
 
     public static String changeRegion() // this one takes a random int
     {
+        ipChangeCounter = 0;
+
         String oldRegion = ShellWrapper.execute(buildShellCommandGet(TYPE_CURRENT_REGION)).get(0);
         alreadyUsedRegions.add(oldRegion);
         List<String> allRegions = ShellWrapper.execute(buildShellCommandGet(TYPE_ALL_REGIONS));
