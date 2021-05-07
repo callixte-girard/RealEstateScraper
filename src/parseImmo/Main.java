@@ -203,7 +203,7 @@ public class Main {
     {
         int nbRetries = 0;
         int nbDone = 0;
-        int nbIPChanges = 0;
+        int nbIPChanges = 0; // TODO: à corriger (mal calculé)
         int nbSameIP = 0;
         boolean needsSave = false;
 
@@ -223,38 +223,46 @@ public class Main {
                         SaveManager.objectSave(filename_cities_list + extension_save, cities);
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedIPs());
 //                        SaveManager.objectSave(filename_vpn_state + extension_save, PIA.getAlreadyUsedRegions());
+                        writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
                     }
 
                     City city = ParseCity.parse(url_to_parse);
                     City city_comp = ParseCity.parse(url_to_parse);
+
                     if (! city.getMeanPrice(false, true).equals(city_comp.getMeanPrice(false, true)))
                     {
                         Disp.exc("Difference between two requests : " + city.getMeanPrice(false, true) + " — " + city_comp.getMeanPrice(false, true));
                         SaveManager.objectSave(filename_cities_list + extension_save, cities);
-//                        break;
+                        writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
+
                         PIA.changeIP(); // includes marking the IP as saturated and try again until it's good
                         nbIPChanges ++;
+//                        Disp.exc("nbIPChanges : " + nbIPChanges);
+                        index_city --;
+                    }
+                    else
+                    {
+//                        Disp.anyType(city);
+                        Disp.anyType(
+                                ">>> City n°" + (index_city+1) + " : [ "
+                                        + city.getName() + " ("
+                                        + city.getPostalCodeAsDptNumber() + ") ] ——> done."
+                        );
+                        cities.add(city);
+
+                        // success : resets try counter and increments done counter
+                        nbRetries = 0;
+                        nbDone ++;
+                        // puts the trigger on after a city has been scraped since last save
+                        needsSave = true;
+
+                        // then, display progress for cities BUT ONLY IF IT HAS NOT BEEN ALREADY PARSED
+                        Disp.progress("Scraped cities", nbDone, urls_cities.size());
+
+                        // sleep a bit to slow pépère down
+                        if (wait_delay > 0) Thread.sleep(wait_delay);
                     }
 
-//                    Disp.anyType(city);
-                    Disp.anyType(
-                            ">>> City n°" + (index_city+1) + " : [ "
-                                    + city.getName() + " ("
-                                    + city.getPostalCodeAsDptNumber() + ") ] ——> done."
-                    );
-                    cities.add(city);
-
-                    // success : resets try counter and increments done counter
-                    nbRetries = 0;
-                    nbDone ++;
-                    // puts the trigger on after a city has been scraped since last save
-                    needsSave = true;
-
-                    // then, display progress for cities BUT ONLY IF IT HAS NOT BEEN ALREADY PARSED
-                    Disp.progress("Scraped cities", nbDone, urls_cities.size());
-
-                    // sleep a bit to slow pépère down
-                    if (wait_delay > 0) Thread.sleep(wait_delay);
 
                 } catch (ArrayIndexOutOfBoundsException | SocketTimeoutException |
                         SSLHandshakeException | ConnectException | UncheckedIOException e) {
@@ -303,13 +311,17 @@ public class Main {
             if (index_city > short_mode_nb_cities) break;
 
             // finally, write cities as .csv to be exported to Excel
-//            writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
+            /*if (needsSave) {
+                writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
+            }*/
 
         } // end of main for loop
 
         // save actual progress when download has finished too.
-        if (needsSave)
+        if (needsSave) {
             SaveManager.objectSave(filename_cities_list + extension_save, cities);
+            writeCitiesAsCSV(filename_cities_list + extension_csv , cities , true);
+        }
     }
 
 
